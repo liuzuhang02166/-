@@ -29,14 +29,35 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [E:/补课/大地/SchedulerApp/Views/AddTeacherWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[E:/补课/大地/SchedulerApp/Views/ConfirmWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[E:/补课/大地/SchedulerApp/Views/ConflictConfirmWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [E:/补课/大地/SchedulerApp/Views/CourseEditorWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[E:/补课/大地/SchedulerApp/Views/ExportPreviewWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [E:/补课/大地/SchedulerApp/Views/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[E:/补课/大地/SchedulerApp/Views/OverrideEditorWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[E:/补课/大地/SchedulerApp/Views/OverrideListWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [E:/补课/大地/SchedulerApp/Views/SelectCourseWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[E:/补课/大地/SchedulerApp/Views/TeacherColorWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [E:/补课/大地/SchedulerApp/Views/TeacherScheduleWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[E:/补课/大地/SchedulerApp/Views/WeekNoteEditorWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

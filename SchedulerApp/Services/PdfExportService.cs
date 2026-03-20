@@ -28,26 +28,55 @@ public sealed class PdfExportService
 
     public void ExportRange(string filePath, DateOnly startDate, DateOnly endDate, string? teacherIdFilter, bool includeWeekNotes)
     {
+        var teachers = _services.Teachers.GetAll().ToList();
+        var courses = _services.Courses.GetAll().ToList();
+        var overrides = _services.Overrides.GetByDateRange(startDate, endDate).ToList();
+        var weekNotes = _services.WeekNotes.GetAll().ToList();
+
+        var bytes = ExportRangeToBytes(startDate, endDate, teacherIdFilter, includeWeekNotes, teachers, courses, overrides, weekNotes);
+        File.WriteAllBytes(filePath, bytes);
+    }
+
+    public static byte[] ExportRangeToBytes(
+        DateOnly startDate,
+        DateOnly endDate,
+        string? teacherIdFilter,
+        bool includeWeekNotes,
+        IReadOnlyList<Teacher> teachers,
+        IReadOnlyList<Course> courses,
+        IReadOnlyList<OverrideEntry> overrides,
+        IReadOnlyList<WeekNote> weekNotes)
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+
         if (endDate < startDate)
             throw new InvalidOperationException("结束日期不能早于开始日期。");
 
-        var teachers = _services.Teachers.GetAll().ToList();
         var teacherById = teachers.ToDictionary(t => t.Id, t => t.Name);
         var teacherColorById = teachers.ToDictionary(t => t.Id, t => t.ColorHex);
-        var courses = _services.Courses.GetAll().ToList();
         var coursesById = courses.ToDictionary(c => c.Id, c => c);
-        var overrides = _services.Overrides.GetByDateRange(startDate, endDate).ToList();
+        var overridesInRange = overrides.Where(o => o.Date >= startDate && o.Date <= endDate).ToList();
 
         var isSingleWeek = endDate == startDate.AddDays(6) && ToWeekday1To7(startDate) == 1;
-        var notes = includeWeekNotes && isSingleWeek ? _services.WeekNotes.Get(startDate)?.Notes ?? string.Empty : string.Empty;
+        var notes = includeWeekNotes && isSingleWeek
+            ? weekNotes.FirstOrDefault(x => x.WeekStart == startDate)?.Notes ?? string.Empty
+            : string.Empty;
 
+        var allTeacherIds = teachers.Select(t => t.Id).ToList();
         var teacherIds = teacherIdFilter is null
             ? teachers.Select(t => t.Id).ToList()
             : teachers.Where(t => t.Id == teacherIdFilter).Select(t => t.Id).ToList();
 
-        var changes = BuildChangeLines(overrides, coursesById, teacherById);
+        var changes = BuildChangeLines(overridesInRange, coursesById, teacherById);
 
-        Document.Create(container =>
+        var weeks = Enumerable.Range(0, endDate.DayNumber - startDate.DayNumber + 1)
+            .Select(offset => startDate.AddDays(offset))
+            .Select(GetWeekStart)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToList();
+
+        return Document.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -89,16 +118,105 @@ public sealed class PdfExportService
                     });
                 });
 
+                foreach (var weekStart in weeks)
+                {
+                    var weekEnd = weekStart.AddDays(6);
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4.Landscape());
+                        page.Margin(28);
+                        page.DefaultTextStyle(x => x.FontSize(10));
+
+                        page.Header().Column(col =>
+                        {
+                            col.Item().Text("全部老师 · 总课表").FontSize(16).SemiBold();
+                            col.Item().Text($"{weekStart:yyyy.MM.dd} - {weekEnd:yyyy.MM.dd}").FontSize(12).FontColor(Colors.Grey.Darken2);
+                            col.Item().Text($"导出范围：{startDate:yyyy.MM.dd} - {endDate:yyyy.MM.dd}").FontSize(10).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        page.Content().PaddingTop(12).Row(row =>
+                        {
+                            row.Spacing(8);
+                            for (var i = 0; i < 7; i++)
+                            {
+                                var date = weekStart.AddDays(i);
+                                var weekday = i + 1;
+                                var inRange = date >= startDate && date <= endDate;
+                                var items = inRange
+                                    ? ComputeAllOccurrencesForDate(date, allTeacherIds, teacherById, coursesById, overridesInRange)
+                                        .OrderBy(x => x.StartMinute)
+                                        .ThenBy(x => x.TeacherName, StringComparer.OrdinalIgnoreCase)
+                                        .ThenBy(x => x.StudentName, StringComparer.OrdinalIgnoreCase)
+                                        .ToList()
+                                    : [];
+
+                                row.RelativeItem().Element(cell =>
+                                {
+                                    cell.Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.Grey.Lighten5).Padding(8).Column(dayCol =>
+                                    {
+                                        dayCol.Spacing(6);
+                                        dayCol.Item().Text($"{date:MM.dd} {WeekdayUtil.ToChinese(weekday)}")
+                                            .FontSize(10)
+                                            .SemiBold()
+                                            .FontColor(inRange ? Colors.Grey.Darken4 : Colors.Grey.Lighten1);
+
+                                        if (items.Count == 0)
+                                        {
+                                            dayCol.Item().Text(inRange ? "（无课程）" : string.Empty).FontSize(9).FontColor(Colors.Grey.Darken1);
+                                            return;
+                                        }
+
+                                        foreach (var it in items)
+                                        {
+                                            var sw = TeacherColorPalette.Get(it.TeacherId, teacherColorById.GetValueOrDefault(it.TeacherId));
+                                            var itemBg = Q(sw.BackgroundR, sw.BackgroundG, sw.BackgroundB);
+                                            var itemBorder = Q(sw.BorderR, sw.BorderG, sw.BorderB);
+                                            var border = it.IsForced ? Q(252, 165, 165) : itemBorder;
+
+                                            dayCol.Item().Border(1).BorderColor(border).Background(itemBg).Padding(6).Column(c =>
+                                            {
+                                                c.Spacing(3);
+                                                c.Item().Row(r =>
+                                                {
+                                                    r.RelativeItem().Text($"{TimeUtil.FormatMinutes(it.StartMinute)}-{TimeUtil.FormatMinutes(it.EndMinute)}")
+                                                        .FontSize(8)
+                                                        .FontColor(Colors.Grey.Darken2);
+                                                    r.RelativeItem().AlignRight().Text(it.TeacherName)
+                                                        .FontSize(8)
+                                                        .FontColor(Colors.Grey.Darken2);
+                                                });
+                                                c.Item().Row(r =>
+                                                {
+                                                    r.RelativeItem().Text(it.StudentName).FontSize(10).SemiBold();
+                                                    if (!string.IsNullOrWhiteSpace(it.Badge))
+                                                    {
+                                                        r.ConstantItem(54).AlignRight().Text(it.Badge)
+                                                            .FontSize(8)
+                                                            .FontColor(Colors.Grey.Darken2);
+                                                    }
+                                                });
+                                                c.Item().Text(it.Content).FontSize(9).FontColor(Colors.Grey.Darken3);
+                                                if (!string.IsNullOrWhiteSpace(it.Note))
+                                                    c.Item().Text(it.Note).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        });
+
+                        page.Footer().AlignRight().Text(x =>
+                        {
+                            x.Span("第 ");
+                            x.CurrentPageNumber();
+                            x.Span(" 页");
+                        });
+                    });
+                }
+
                 foreach (var teacherId in teacherIds)
                 {
                     var teacherName = teacherById.TryGetValue(teacherId, out var n) ? n : "未知老师";
-
-                    var weeks = Enumerable.Range(0, endDate.DayNumber - startDate.DayNumber + 1)
-                        .Select(offset => startDate.AddDays(offset))
-                        .Select(GetWeekStart)
-                        .Distinct()
-                        .OrderBy(x => x)
-                        .ToList();
 
                     foreach (var weekStart in weeks)
                     {
@@ -125,7 +243,7 @@ public sealed class PdfExportService
                                     var weekday = i + 1;
                                     var inRange = date >= startDate && date <= endDate;
                                     var items = inRange
-                                        ? ComputeOccurrencesForDate(date, teacherId, coursesById, overrides)
+                                        ? ComputeOccurrencesForDate(date, teacherId, coursesById, overridesInRange)
                                             .OrderBy(x => x.StartMinute)
                                             .ThenBy(x => x.StudentName, StringComparer.OrdinalIgnoreCase)
                                             .ToList()
@@ -190,7 +308,7 @@ public sealed class PdfExportService
                     }
                 }
             })
-            .GeneratePdf(filePath);
+            .GeneratePdf();
     }
 
     private enum OccurrenceKind
@@ -283,6 +401,47 @@ public sealed class PdfExportService
         }
 
         return baseItems;
+    }
+
+    private sealed record AllTeacherOccurrence(
+        string TeacherId,
+        string TeacherName,
+        string StudentName,
+        string Content,
+        string Note,
+        int StartMinute,
+        int EndMinute,
+        string Badge,
+        bool IsForced
+    );
+
+    private static IReadOnlyList<AllTeacherOccurrence> ComputeAllOccurrencesForDate(
+        DateOnly date,
+        IReadOnlyList<string> teacherIds,
+        IReadOnlyDictionary<string, string> teacherById,
+        IReadOnlyDictionary<string, Course> coursesById,
+        IReadOnlyList<OverrideEntry> overrides)
+    {
+        var list = new List<AllTeacherOccurrence>();
+        foreach (var teacherId in teacherIds)
+        {
+            var teacherName = teacherById.TryGetValue(teacherId, out var n) ? n : "未知老师";
+            foreach (var it in ComputeOccurrencesForDate(date, teacherId, coursesById, overrides))
+            {
+                list.Add(new AllTeacherOccurrence(
+                    teacherId,
+                    teacherName,
+                    it.StudentName,
+                    it.Content,
+                    it.Note,
+                    it.StartMinute,
+                    it.EndMinute,
+                    it.Badge,
+                    it.IsForced
+                ));
+            }
+        }
+        return list;
     }
 
     private static DateOnly GetWeekStart(DateOnly date)

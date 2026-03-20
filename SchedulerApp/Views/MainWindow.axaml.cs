@@ -1,7 +1,10 @@
 using System;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using SchedulerApp.Domain;
 using SchedulerApp.Models;
 using SchedulerApp.ViewModels;
@@ -26,6 +29,7 @@ public partial class MainWindow : Window
         ExistingOverridesMenuButton.Click += ExistingOverridesMenuButtonOnClick;
         NoticeButton.Click += NoticeButtonOnClick;
         ExportButton.Click += ExportButtonOnClick;
+        ExportJsonButton.Click += ExportJsonButtonOnClick;
         PrevWeekButton.Click += (_, _) =>
         {
             if (DataContext is MainWindowViewModel vm)
@@ -88,6 +92,56 @@ public partial class MainWindow : Window
             return;
         var w = new ExportPreviewWindow(App.Services, DateOnly.FromDateTime(DateTime.Today), vm.SelectedTeacher);
         await w.ShowDialog(this);
+    }
+
+    private async void ExportJsonButtonOnClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var fileName = $"排课数据_{DateTimeOffset.Now:yyyyMMdd-HHmmss}.json";
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "导出 JSON（网页版导入）",
+                SuggestedFileName = fileName,
+                DefaultExtension = "json",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("JSON") { Patterns = ["*.json"] }
+                ]
+            });
+
+            var path = file?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            var snapshot = new
+            {
+                Teachers = App.Services.Teachers.GetAll(),
+                Courses = App.Services.Courses.GetAll(),
+                Overrides = App.Services.Overrides.GetAll(),
+                WeekNotes = App.Services.WeekNotes.GetAll()
+            };
+
+            var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            {
+                WriteIndented = true
+            });
+
+            await File.WriteAllTextAsync(path, json);
+
+            var done = new ConfirmWindow(
+                "导出完成",
+                $"已导出 JSON：\n{path}\n\n请在网页版首页上传该 JSON 文件。",
+                "确定",
+                "关闭"
+            );
+            await done.ShowDialog<bool>(this);
+        }
+        catch (Exception ex)
+        {
+            var error = new ConfirmWindow("导出失败", ex.Message, "确定", "关闭");
+            await error.ShowDialog<bool>(this);
+        }
     }
 
     private async void AddTeacherButtonOnClick(object? sender, RoutedEventArgs e)

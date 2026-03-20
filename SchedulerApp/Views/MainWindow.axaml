@@ -137,6 +137,18 @@
             </Grid>
           </Button>
 
+          <Button Name="ExportJsonButton" Classes="secondary" HorizontalContentAlignment="Stretch">
+            <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
+              <Border Width="44" Height="44" CornerRadius="14" Background="#160EA5E9" BorderBrush="#220EA5E9" BorderThickness="1">
+                <TextBlock Classes="mdl2" Text="&#xE8A5;" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="导出 JSON" FontSize="13" FontWeight="SemiBold" />
+                <TextBlock Text="给网页版导入" FontSize="11" Foreground="#6B7280" />
+              </StackPanel>
+            </Grid>
+          </Button>
+
           <Border CornerRadius="16" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="12" Margin="0,6,0,0">
             <StackPanel Spacing="10">
               <StackPanel>

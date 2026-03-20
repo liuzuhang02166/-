@@ -73,7 +73,7 @@
                 <CheckBox Content="包含本周备注"
                           IsEnabled="{Binding IncludeWeekNotesEnabled}"
                           IsChecked="{Binding IncludeWeekNotes, Mode=TwoWay}" />
-                <TextBlock Text="默认总是包含“变动通知”第一页（本周临时调整）。" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+                <TextBlock Text="默认总是包含“变动通知”第一页，并追加“全部老师·总课表”页面。" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
               </StackPanel>
             </Border>
           </StackPanel>

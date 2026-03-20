@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: scheduler-api
+    runtime: dotnet
+    plan: free
+    rootDir: .
+    buildCommand: dotnet publish SchedulerApi/SchedulerApi.csproj -c Release -o out
+    startCommand: dotnet out/SchedulerApi.dll --urls http://0.0.0.0:$PORT
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production

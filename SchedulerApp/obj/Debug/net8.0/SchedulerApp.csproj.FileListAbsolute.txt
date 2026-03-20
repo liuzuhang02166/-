@@ -447,3 +447,4 @@ E:\补课\大地\SchedulerApp\bin_tmp3\runtimes\win-arm\native\e_sqlite3.dll
 E:\补课\大地\SchedulerApp\bin_tmp3\runtimes\win-arm64\native\e_sqlite3.dll
 E:\补课\大地\SchedulerApp\bin_tmp3\runtimes\win-x64\native\e_sqlite3.dll
 E:\补课\大地\SchedulerApp\bin_tmp3\runtimes\win-x86\native\e_sqlite3.dll
+E:\补课\大地\SchedulerApp\obj\Debug\net8.0\SchedulerApp.sourcelink.json

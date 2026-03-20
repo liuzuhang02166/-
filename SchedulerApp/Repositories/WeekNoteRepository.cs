@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using SchedulerApp.Data;
 using SchedulerApp.Models;
@@ -34,6 +35,24 @@ public sealed class WeekNoteRepository
         return note;
     }
 
+    public IReadOnlyList<WeekNote> GetAll()
+    {
+        using var conn = _db.OpenConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT week_start, notes, updated_at FROM week_notes ORDER BY week_start DESC;";
+        using var reader = cmd.ExecuteReader();
+        var list = new List<WeekNote>();
+        while (reader.Read())
+        {
+            list.Add(new WeekNote(
+                DateOnly.Parse(reader.GetString(0)),
+                reader.GetString(1),
+                DateTimeOffset.Parse(reader.GetString(2))
+            ));
+        }
+        return list;
+    }
+
     public WeekNote? Get(DateOnly weekStart)
     {
         using var conn = _db.OpenConnection();
@@ -50,4 +69,3 @@ public sealed class WeekNoteRepository
         );
     }
 }
-
