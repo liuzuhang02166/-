@@ -11,4 +11,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.25" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\SchedulerApp\Models\*.cs" Link="Shared\Models\%(Filename)%(Extension)" />
+    <Compile Include="..\SchedulerApp\Domain\*.cs" Link="Shared\Domain\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

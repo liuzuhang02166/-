@@ -1,7 +1,147 @@
-﻿@page "/"
+@page "/"
+@using SchedulerWeb.Services
+@inject SchedulerApiClient Api
+@implements IDisposable
 
-<PageTitle>Home</PageTitle>
+<PageTitle>排课系统</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>排课系统</h1>
 
-Welcome to your new app.
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="alert alert-danger" role="alert">@_error</div>
+}
+
+<div class="card mb-3">
+    <div class="card-header">云端协作</div>
+    <div class="card-body">
+        <div class="mb-2">
+            <label class="form-label">后端地址（Render SchedulerApi）</label>
+            <input class="form-control" @bind="_apiBaseUrl" placeholder="https://dadi-3fze.onrender.com" />
+            <div class="text-muted small mt-2">该地址会保存在浏览器本地（localStorage）中。</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-outline-secondary" @onclick="SaveBaseUrl">保存地址</button>
+            <button class="btn btn-outline-secondary" @onclick="CheckHealth">检测服务</button>
+        </div>
+
+        @if (!Api.IsAuthenticated)
+        {
+            <div class="mb-2">
+                <label class="form-label">管理员口令</label>
+                <input class="form-control" type="password" @bind="_password" />
+            </div>
+            <button class="btn btn-primary" @onclick="Login">连接并登录</button>
+        }
+        else
+        {
+            <div class="alert alert-success" role="alert">已登录云端，可多人协作编辑。</div>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-secondary" @onclick="Refresh">刷新云端数据</button>
+                <button class="btn btn-outline-danger" @onclick="Logout">退出登录</button>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">云端数据统计</div>
+    <div class="card-body">
+        <div>老师：@Api.Snapshot.Teachers.Count</div>
+        <div>课程：@Api.Snapshot.Courses.Count</div>
+        <div>临时调整：@Api.Snapshot.Overrides.Count</div>
+        <div>周备注：@Api.Snapshot.WeekNotes.Count</div>
+    </div>
+</div>
+
+@code {
+    private string? _error;
+    private string _apiBaseUrl = string.Empty;
+    private string _password = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Api.Changed += OnChanged;
+        await Api.LoadAsync();
+        _apiBaseUrl = Api.ApiBaseUrl;
+    }
+
+    public void Dispose()
+    {
+        Api.Changed -= OnChanged;
+    }
+
+    private void OnChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveBaseUrl()
+    {
+        _error = null;
+        try
+        {
+            await Api.SetApiBaseUrlAsync(_apiBaseUrl);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private async Task CheckHealth()
+    {
+        _error = null;
+        try
+        {
+            await Api.SetApiBaseUrlAsync(_apiBaseUrl);
+            await Api.CheckHealthAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private async Task Login()
+    {
+        _error = null;
+        try
+        {
+            await Api.SetApiBaseUrlAsync(_apiBaseUrl);
+            await Api.LoginAsync(_password);
+            _password = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private async Task Refresh()
+    {
+        _error = null;
+        try
+        {
+            await Api.RefreshSnapshotAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private async Task Logout()
+    {
+        _error = null;
+        try
+        {
+            await Api.LogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}
