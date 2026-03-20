@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - Index</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.25)",
+              card: "0 10px 30px rgba(0,0,0,.18)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="./shared/ui.css" />
+  </head>
+  <body class="min-h-screen bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-70"
+        alt="Windows wallpaper"
+        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=2400&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/55 to-zinc-950/80"></div>
+    </div>
+
+    <div class="mx-auto max-w-[1480px] px-6 py-8">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight">SchedulerApp 高保真原型</h1>
+          <p class="mt-1 text-sm text-zinc-300">入口页仅承载“平铺展示”，每个界面在 pages/ 下独立实现。</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="hidden sm:inline text-xs text-zinc-300">建议窗口宽度 ≥ 1280px</span>
+          <a
+            class="rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-zinc-100 ring-1 ring-white/15 hover:bg-white/15"
+            href="./pages/home.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            单独打开主界面
+          </a>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section class="proto-frame">
+          <header class="proto-frame__header">
+            <div class="proto-badge">页面 A</div>
+            <div class="proto-title">主控制台（周导航 + 总课表 + 老师面板）</div>
+          </header>
+          <iframe class="proto-frame__iframe" title="home" src="./pages/home.html"></iframe>
+        </section>
+
+        <section class="proto-frame">
+          <header class="proto-frame__header">
+            <div class="proto-badge">页面 B</div>
+            <div class="proto-title">添加/更改学员弹窗（二合一）</div>
+          </header>
+          <iframe class="proto-frame__iframe" title="student-editor" src="./pages/student-editor.html"></iframe>
+        </section>
+
+        <section class="proto-frame">
+          <header class="proto-frame__header">
+            <div class="proto-badge">页面 C</div>
+            <div class="proto-title">临时调整弹窗（窜课 + 目标老师空余提示）</div>
+          </header>
+          <iframe class="proto-frame__iframe" title="override-editor" src="./pages/override-editor.html"></iframe>
+        </section>
+
+        <section class="proto-frame">
+          <header class="proto-frame__header">
+            <div class="proto-badge">补全</div>
+            <div class="proto-title">冲突预警二次确认（重新修改 / 强制覆盖）</div>
+          </header>
+          <iframe class="proto-frame__iframe" title="conflict-confirm" src="./pages/conflict-confirm.html"></iframe>
+        </section>
+
+        <section class="proto-frame">
+          <header class="proto-frame__header">
+            <div class="proto-badge">补全</div>
+            <div class="proto-title">删除二次确认（老师/学员）</div>
+          </header>
+          <iframe class="proto-frame__iframe" title="delete-confirm" src="./pages/delete-confirm.html"></iframe>
+        </section>
+
+        <section class="proto-frame">
+          <header class="proto-frame__header">
+            <div class="proto-badge">增强</div>
+            <div class="proto-title">导出预览（可选包含本周备注）</div>
+          </header>
+          <iframe class="proto-frame__iframe" title="export-preview" src="./pages/export-preview.html"></iframe>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

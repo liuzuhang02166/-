@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - 冲突确认</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.35)",
+              soft: "0 10px 30px rgba(0,0,0,.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+  </head>
+  <body class="min-h-[560px] bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-65"
+        alt="Background"
+        src="https://images.unsplash.com/photo-1516387938699-a93567ec168e?auto=format&fit=crop&w=2200&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/60 via-zinc-950/65 to-zinc-950/90"></div>
+    </div>
+
+    <div class="mx-auto flex min-h-[560px] max-w-[760px] items-center justify-center p-6">
+      <div class="w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10 shadow-win backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/20 text-rose-200 ring-1 ring-white/15">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold leading-4">检测到课程冲突</div>
+              <div class="mt-0.5 text-xs text-zinc-300 leading-4">你可以返回修改，或强制覆盖并在课表上红边标记</div>
+            </div>
+          </div>
+          <button id="closeBtn" class="h-9 w-10 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 p-4">
+          <section class="col-span-7 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-sm font-semibold">冲突详情</div>
+
+            <div class="mt-3 grid gap-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs text-zinc-300">你正在保存</div>
+                  <span class="rounded-full bg-sky-500/20 px-2 py-0.5 text-[11px] font-semibold text-sky-200 ring-1 ring-white/10">更改学员</span>
+                </div>
+                <div class="mt-2 text-sm font-semibold">小明 · 林老师 · 10:00 - 11:00</div>
+                <div class="mt-1 text-xs text-zinc-300">2026-03-09（周一）</div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs text-zinc-300">冲突对象</div>
+                  <span class="rounded-full bg-rose-500/20 px-2 py-0.5 text-[11px] font-semibold text-rose-200 ring-1 ring-white/10">重叠</span>
+                </div>
+                <div class="mt-2 text-sm font-semibold">圆圆 · 林老师 · 10:30 - 11:30</div>
+                <div class="mt-1 text-xs text-zinc-300">同一老师同一时间段存在重叠</div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div class="text-sm font-semibold">强制覆盖的展示效果</div>
+                <div class="mt-2 text-xs text-zinc-300 leading-6">
+                  允许保存，但将对相关色块加红边以提醒管理员。
+                </div>
+                <div class="mt-3 relative h-[120px] overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <div
+                    class="absolute left-3 top-6 w-[260px] rounded-xl border border-white/10 bg-gradient-to-br from-sky-400/85 to-sky-700/70 p-2 text-xs shadow-soft"
+                  >
+                    <div class="font-semibold">小明</div>
+                    <div class="mt-0.5 text-[11px] text-white/90">10:00 - 11:00</div>
+                  </div>
+                  <div
+                    class="absolute left-10 top-10 w-[260px] rounded-xl bg-gradient-to-br from-sky-400/85 to-sky-700/70 p-2 text-xs shadow-soft"
+                    style="box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.95), 0 10px 24px rgba(0, 0, 0, 0.25)"
+                  >
+                    <div class="font-semibold">圆圆</div>
+                    <div class="mt-0.5 text-[11px] text-white/90">10:30 - 11:30</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="col-span-5 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-sm font-semibold">处理建议</div>
+            <div class="mt-2 space-y-2 text-xs text-zinc-300 leading-6">
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-rotate-left mt-1 text-sky-300"></i>
+                <span>重新修改：更换时间或老师，避免重叠。</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-shield-heart mt-1 text-amber-300"></i>
+                <span>强制覆盖：适用于两人拼课/特殊排课。</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-info mt-1 text-zinc-300"></i>
+                <span>若强制覆盖，后续导出 PDF 的“变动通知”页会记录该异常。</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/10 bg-white/5 px-4 py-3">
+          <button
+            id="editBtn"
+            class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15"
+          >
+            重新修改
+          </button>
+          <button
+            id="forceBtn"
+            class="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-rose-400"
+          >
+            强制覆盖
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared/ui.global.js"></script>
+    <script>
+      const { postToParent, qs } = window.ProtoUI;
+
+      function closeSelf() {
+        postToParent("closeOverlay");
+        if (window.parent === window) window.close();
+      }
+
+      qs("#closeBtn").addEventListener("click", closeSelf);
+      qs("#editBtn").addEventListener("click", () => postToParent("editAgain"));
+      qs("#forceBtn").addEventListener("click", () => postToParent("forceOverride", { courseIds: ["c101", "c202"] }));
+    </script>
+  </body>
+</html>

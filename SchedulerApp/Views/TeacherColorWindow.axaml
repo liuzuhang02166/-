@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        x:Class="SchedulerApp.Views.TeacherColorWindow"
+        x:DataType="vm:TeacherColorDialogViewModel"
+        Width="420"
+        Height="260"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="设置老师颜色">
+  <Border Classes="card" Margin="18">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="16" RowSpacing="10">
+      <StackPanel Spacing="2">
+        <TextBlock Text="老师颜色" FontSize="14" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding Teacher.Name}" FontSize="12" Foreground="#6B7280" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="1" Spacing="6">
+        <TextBlock Text="选择颜色" FontSize="12" Foreground="#6B7280" />
+        <ComboBox Classes="field"
+                  Height="40"
+                  ItemsSource="{Binding ColorOptions}"
+                  SelectedItem="{Binding SelectedColor, Mode=TwoWay}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:TeacherColorOption">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+
+      <TextBlock Grid.Row="2" Text="{Binding Error}" Foreground="Tomato" />
+
+      <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+        <Button Name="CancelButton" Classes="secondary" Content="取消" Padding="16,10" />
+        <Button Name="OkButton" Classes="primary" Content="保存" Padding="16,10" IsDefault="True" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>
+

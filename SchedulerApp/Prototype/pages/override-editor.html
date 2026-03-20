@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - 临时调整</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.35)",
+              soft: "0 10px 30px rgba(0,0,0,.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+  </head>
+  <body class="min-h-[720px] bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-70"
+        alt="Background"
+        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=2200&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/55 via-zinc-950/60 to-zinc-950/90"></div>
+    </div>
+
+    <div class="mx-auto flex min-h-[720px] max-w-[860px] items-center justify-center p-6">
+      <div class="w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10 shadow-win backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/20 text-violet-200 ring-1 ring-white/15">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold leading-4">临时调整</div>
+              <div class="mt-0.5 text-xs text-zinc-300 leading-4">仅影响单日 · 优先级高于基础排课（Override）</div>
+            </div>
+          </div>
+          <button id="closeBtn" class="h-9 w-10 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 p-4">
+          <section class="col-span-7 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">变动内容</div>
+              <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">Override</span>
+            </div>
+
+            <div class="mt-3 grid gap-3">
+              <div class="grid grid-cols-2 gap-3">
+                <label class="field">
+                  <span class="field-label">日期</span>
+                  <input id="day" class="field-input" type="date" value="2026-03-11" />
+                </label>
+                <label class="field">
+                  <span class="field-label">动作</span>
+                  <select id="action" class="field-input">
+                    <option value="move">窜课（换老师/换时间）</option>
+                    <option value="cancel">停课（当日取消）</option>
+                    <option value="add">加课（当日新增）</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm font-semibold">原课程</div>
+                  <span class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">自动带入</span>
+                </div>
+                <div class="mt-2 grid gap-1 text-xs text-zinc-300">
+                  <div class="flex items-center justify-between">
+                    <span>学员</span><span class="font-semibold text-zinc-100">小明</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span>老师</span><span class="font-semibold text-zinc-100">林老师</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span>时间</span><span class="font-semibold text-zinc-100">10:00 - 11:00</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <label class="field">
+                  <span class="field-label">新老师</span>
+                  <select id="newTeacher" class="field-input">
+                    <option value="wang">王老师</option>
+                    <option value="zhou">周老师</option>
+                    <option value="lin">林老师</option>
+                    <option value="chen">陈老师</option>
+                  </select>
+                </label>
+                <div class="field">
+                  <span class="field-label">新时间</span>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input id="newStartTime" class="field-input" type="time" value="11:00" />
+                    <input id="newEndTime" class="field-input" type="time" value="12:00" />
+                  </div>
+                </div>
+              </div>
+
+              <label class="field">
+                <span class="field-label">说明（可选）</span>
+                <textarea class="field-input h-24 resize-none">临时调课：家长临时有事，改到王老师 11:00。</textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="col-span-5 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">目标老师当日空余</div>
+              <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">即时提示</span>
+            </div>
+            <div class="mt-2 text-xs text-zinc-300 leading-6">
+              选择新老师后立即展示空余时间段，避免“窜过去又冲突”的返工。
+            </div>
+
+            <div class="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+              <div class="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
+                <div class="text-xs font-semibold text-zinc-200">2026-03-11（周三）</div>
+                <div id="teacherTag" class="rounded-md bg-violet-500/20 px-2 py-0.5 text-[11px] font-semibold text-violet-200 ring-1 ring-white/10">
+                  王老师
+                </div>
+              </div>
+              <div id="slots" class="win-scroll max-h-[360px] overflow-auto p-3">
+                <div class="grid gap-2">
+                  <button class="slot">
+                    <span class="slot-time">08:00 - 09:30</span>
+                    <span class="slot-badge slot-ok"><i class="fa-solid fa-check"></i> 空</span>
+                  </button>
+                  <button class="slot">
+                    <span class="slot-time">09:30 - 10:30</span>
+                    <span class="slot-badge slot-busy"><i class="fa-solid fa-ban"></i> 占用</span>
+                  </button>
+                  <button class="slot">
+                    <span class="slot-time">10:30 - 12:00</span>
+                    <span class="slot-badge slot-ok"><i class="fa-solid fa-check"></i> 空</span>
+                  </button>
+                  <button class="slot">
+                    <span class="slot-time">13:00 - 14:00</span>
+                    <span class="slot-badge slot-ok"><i class="fa-solid fa-check"></i> 空</span>
+                  </button>
+                  <button class="slot">
+                    <span class="slot-time">14:00 - 15:30</span>
+                    <span class="slot-badge slot-busy"><i class="fa-solid fa-ban"></i> 占用</span>
+                  </button>
+                  <button class="slot">
+                    <span class="slot-time">15:30 - 18:00</span>
+                    <span class="slot-badge slot-ok"><i class="fa-solid fa-check"></i> 空</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div class="text-sm font-semibold">提示</div>
+              <div class="mt-2 space-y-2 text-xs text-zinc-300 leading-6">
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-circle-info mt-1 text-sky-300"></i>
+                  <span>窜课本质是“单日覆盖”，不会改动长期排课。</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-triangle-exclamation mt-1 text-rose-300"></i>
+                  <span>若仍发生冲突，将触发二次确认。</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/10 bg-white/5 px-4 py-3">
+          <button id="cancelBtn" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+            取消
+          </button>
+          <button
+            id="saveBtn"
+            class="rounded-xl bg-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-violet-400"
+          >
+            保存临时调整
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared/ui.global.js"></script>
+    <script>
+      const { postToParent, qs } = window.ProtoUI;
+
+      const teacherTag = qs("#teacherTag");
+      const newTeacher = qs("#newTeacher");
+      const slots = qs("#slots");
+      const newStartTime = qs("#newStartTime");
+      const newEndTime = qs("#newEndTime");
+
+      const teacherMap = {
+        wang: { name: "王老师", cls: "bg-violet-500/20 text-violet-200" },
+        zhou: { name: "周老师", cls: "bg-emerald-500/20 text-emerald-200" },
+        lin: { name: "林老师", cls: "bg-sky-500/20 text-sky-200" },
+        chen: { name: "陈老师", cls: "bg-amber-500/20 text-amber-200" }
+      };
+
+      const slotsByTeacher = {
+        wang: [
+          { s: "08:00", e: "09:30", ok: true },
+          { s: "09:30", e: "10:30", ok: false },
+          { s: "10:30", e: "12:00", ok: true },
+          { s: "13:00", e: "14:00", ok: true },
+          { s: "14:00", e: "15:30", ok: false },
+          { s: "15:30", e: "18:00", ok: true }
+        ],
+        zhou: [
+          { s: "08:00", e: "10:00", ok: true },
+          { s: "10:00", e: "11:30", ok: false },
+          { s: "11:30", e: "13:00", ok: true },
+          { s: "13:00", e: "14:30", ok: false },
+          { s: "14:30", e: "16:30", ok: true },
+          { s: "16:30", e: "18:00", ok: true }
+        ],
+        lin: [
+          { s: "08:00", e: "09:00", ok: true },
+          { s: "09:00", e: "11:00", ok: false },
+          { s: "11:00", e: "12:30", ok: true },
+          { s: "13:00", e: "15:00", ok: true },
+          { s: "15:00", e: "16:30", ok: false },
+          { s: "16:30", e: "18:30", ok: true }
+        ],
+        chen: [
+          { s: "08:00", e: "10:30", ok: false },
+          { s: "10:30", e: "12:00", ok: true },
+          { s: "13:00", e: "14:00", ok: true },
+          { s: "14:00", e: "15:30", ok: true },
+          { s: "15:30", e: "17:00", ok: false },
+          { s: "17:00", e: "18:30", ok: true }
+        ]
+      };
+
+      function applyTeacherTag() {
+        const t = teacherMap[newTeacher.value] || teacherMap.wang;
+        teacherTag.textContent = t.name;
+        teacherTag.className =
+          "rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ring-white/10 " + t.cls;
+      }
+
+      function renderSlots() {
+        const list = slotsByTeacher[newTeacher.value] || slotsByTeacher.wang;
+        slots.innerHTML = `
+          <div class="grid gap-2">
+            ${list
+              .map((x) => {
+                const badge = x.ok
+                  ? `<span class="slot-badge slot-ok"><i class="fa-solid fa-check"></i> 空</span>`
+                  : `<span class="slot-badge slot-busy"><i class="fa-solid fa-ban"></i> 占用</span>`;
+                return `
+                  <button class="slot" data-ok="${x.ok ? "1" : "0"}" data-s="${x.s}" data-e="${x.e}">
+                    <span class="slot-time">${x.s} - ${x.e}</span>
+                    ${badge}
+                  </button>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      applyTeacherTag();
+      renderSlots();
+
+      newTeacher.addEventListener("change", () => {
+        applyTeacherTag();
+        renderSlots();
+      });
+
+      slots.addEventListener("click", (e) => {
+        const btn = e.target.closest(".slot");
+        if (!btn) return;
+        if (btn.dataset.ok !== "1") return;
+        newStartTime.value = btn.dataset.s || newStartTime.value;
+        newEndTime.value = btn.dataset.e || newEndTime.value;
+      });
+
+      function closeSelf() {
+        postToParent("closeOverlay");
+        if (window.parent === window) window.close();
+      }
+
+      qs("#closeBtn").addEventListener("click", closeSelf);
+      qs("#cancelBtn").addEventListener("click", closeSelf);
+      qs("#saveBtn").addEventListener("click", () => {
+        postToParent("closeOverlay");
+      });
+    </script>
+
+    <style>
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.72);
+        font-weight: 600;
+      }
+      .field-input {
+        width: 100%;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+        outline: none;
+      }
+      .field-input:focus {
+        border-color: rgba(167, 139, 250, 0.55);
+        box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.12);
+      }
+      .slot {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 16px;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      .slot:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+      .slot-time {
+        font-size: 13px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.92);
+      }
+      .slot-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .slot-ok {
+        background: rgba(16, 185, 129, 0.20);
+        color: rgba(236, 253, 245, 0.92);
+      }
+      .slot-busy {
+        background: rgba(244, 63, 94, 0.18);
+        color: rgba(255, 228, 230, 0.92);
+      }
+    </style>
+  </body>
+</html>

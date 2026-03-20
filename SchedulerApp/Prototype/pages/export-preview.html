@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - 导出预览</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.35)",
+              soft: "0 10px 30px rgba(0,0,0,.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+  </head>
+  <body class="min-h-[720px] bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-70"
+        alt="Background"
+        src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=2200&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/55 via-zinc-950/60 to-zinc-950/90"></div>
+    </div>
+
+    <div class="mx-auto flex min-h-[720px] max-w-[860px] items-center justify-center p-6">
+      <div class="w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10 shadow-win backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-200 ring-1 ring-white/15">
+              <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold leading-4">导出预览</div>
+              <div class="mt-0.5 text-xs text-zinc-300 leading-4">导出前可勾选“是否包含本周备注”</div>
+            </div>
+          </div>
+          <button id="closeBtn" class="h-9 w-10 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 p-4">
+          <section class="col-span-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-sm font-semibold">导出范围</div>
+            <div class="mt-2 text-xs text-zinc-300">2026年3月 第2周（03.09 - 03.15）</div>
+
+            <div class="mt-3 grid gap-2">
+              <label class="opt">
+                <input id="incNotice" type="checkbox" class="h-4 w-4 accent-amber-500" checked />
+                <span>
+                  <div class="opt-title">包含变动通知（第一页）</div>
+                  <div class="opt-sub">列出本周临时调整与强制覆盖</div>
+                </span>
+              </label>
+              <label class="opt">
+                <input id="incNotes" type="checkbox" class="h-4 w-4 accent-amber-500" />
+                <span>
+                  <div class="opt-title">包含本周备注</div>
+                  <div class="opt-sub">可用于内部，不一定给家长/老师</div>
+                </span>
+              </label>
+              <label class="opt">
+                <input type="checkbox" class="h-4 w-4 accent-amber-500" checked />
+                <span>
+                  <div class="opt-title">按老师分组导出</div>
+                  <div class="opt-sub">每位老师一份 PDF（含个人周表）</div>
+                </span>
+              </label>
+              <label class="opt">
+                <input type="checkbox" class="h-4 w-4 accent-amber-500" checked />
+                <span>
+                  <div class="opt-title">显示颜色标识</div>
+                  <div class="opt-sub">颜色与主界面一致，便于识别</div>
+                </span>
+              </label>
+            </div>
+
+            <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div class="text-sm font-semibold">导出对象</div>
+              <div class="mt-2 flex items-center gap-2">
+                <img
+                  class="h-8 w-8 rounded-full object-cover ring-1 ring-white/20"
+                  alt="Teacher avatar"
+                  src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=70"
+                />
+                <div class="flex-1">
+                  <div id="exportTargetTitle" class="text-sm font-semibold">全部老师</div>
+                  <div id="exportTargetSub" class="text-xs text-zinc-300">4 位老师 · 31 名学员</div>
+                </div>
+              </div>
+              <button id="filterBtn" class="mt-3 w-full rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+                <i class="fa-solid fa-filter mr-2"></i>筛选老师…
+              </button>
+            </div>
+          </section>
+
+          <section class="col-span-8 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">预览</div>
+              <div class="text-xs text-zinc-300">页面缩略图 + 首屏内容示意</div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-3 gap-3">
+              <div class="thumb" data-page="notice">
+                <div class="thumb-head">
+                  <span class="thumb-tag bg-amber-500/20 text-amber-200">P1</span>
+                  <span class="thumb-title">变动通知</span>
+                </div>
+                <div class="thumb-body">
+                  <div class="line w-3/4"></div>
+                  <div class="line w-2/3"></div>
+                  <div class="line w-5/6"></div>
+                  <div class="mt-3 rounded-xl bg-rose-500/10 p-2 ring-1 ring-rose-500/20">
+                    <div class="text-[11px] font-semibold text-rose-100">强制覆盖：1 条</div>
+                    <div class="text-[11px] text-rose-100/80">建议优先跟进</div>
+                  </div>
+                </div>
+              </div>
+              <div class="thumb" data-page="teacher">
+                <div class="thumb-head">
+                  <span class="thumb-tag bg-sky-500/20 text-sky-200">P2</span>
+                  <span class="thumb-title">林老师周表</span>
+                </div>
+                <div class="thumb-body">
+                  <div class="grid grid-cols-3 gap-2">
+                    <div class="mini-block bg-sky-500/30"></div>
+                    <div class="mini-block bg-sky-500/20"></div>
+                    <div class="mini-block bg-sky-500/10"></div>
+                    <div class="mini-block bg-sky-500/20"></div>
+                    <div class="mini-block bg-sky-500/30"></div>
+                    <div class="mini-block bg-sky-500/10"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="thumb" data-page="notes">
+                <div class="thumb-head">
+                  <span class="thumb-tag bg-zinc-500/20 text-zinc-200">P3</span>
+                  <span class="thumb-title">本周备注</span>
+                </div>
+                <div class="thumb-body">
+                  <div class="line w-5/6"></div>
+                  <div class="line w-2/3"></div>
+                  <div class="line w-3/4"></div>
+                  <div class="mt-3 rounded-xl bg-white/5 p-2 ring-1 ring-white/10">
+                    <div class="text-[11px] font-semibold text-zinc-100">可选</div>
+                    <div class="text-[11px] text-zinc-300">默认不导出</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+              <div class="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
+                <div class="text-xs font-semibold text-zinc-200">P1 · 变动通知（示意）</div>
+                <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">导出预览</span>
+              </div>
+              <div class="p-4">
+                <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
+                  <div class="flex items-center justify-between">
+                    <div class="text-sm font-semibold">本周变动通知</div>
+                    <div class="text-xs text-zinc-300">03.09 - 03.15</div>
+                  </div>
+                  <div class="mt-3 grid gap-2 text-xs text-zinc-300">
+                    <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 ring-1 ring-white/10">
+                      <span>03.11（周三）小明：临时调整到 王老师 11:00</span>
+                      <span class="rounded-full bg-violet-500/20 px-2 py-0.5 text-[11px] font-semibold text-violet-200 ring-1 ring-white/10"
+                        >Override</span
+                      >
+                    </div>
+                    <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 ring-1 ring-white/10">
+                      <span>03.09（周一）林老师：强制覆盖（冲突红边标记）</span>
+                      <span class="rounded-full bg-rose-500/20 px-2 py-0.5 text-[11px] font-semibold text-rose-200 ring-1 ring-white/10"
+                        >冲突</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/10 bg-white/5 px-4 py-3">
+          <button id="cancelBtn" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+            取消
+          </button>
+          <div class="flex items-center gap-2">
+            <button class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+              <i class="fa-solid fa-eye mr-2"></i>全屏预览
+            </button>
+            <button
+              id="exportBtn"
+              class="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-amber-400"
+            >
+              开始导出
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared/ui.global.js"></script>
+    <script>
+      const { postToParent, qs } = window.ProtoUI;
+      const exportTargetTitle = qs("#exportTargetTitle");
+      const exportTargetSub = qs("#exportTargetSub");
+      const filterBtn = qs("#filterBtn");
+
+      function applyParams() {
+        const usp = new URLSearchParams(location.search);
+        const scope = usp.get("scope");
+        const teacher = usp.get("teacher");
+        if (scope === "teacher" && teacher) {
+          exportTargetTitle.textContent = teacher;
+          exportTargetSub.textContent = "个人周表 · 含变动通知（可选）";
+          filterBtn.classList.add("hidden");
+        }
+      }
+
+      function closeSelf() {
+        postToParent("closeOverlay");
+        if (window.parent === window) window.close();
+      }
+
+      applyParams();
+      qs("#closeBtn").addEventListener("click", closeSelf);
+      qs("#cancelBtn").addEventListener("click", closeSelf);
+      qs("#exportBtn").addEventListener("click", () => closeSelf());
+    </script>
+
+    <style>
+      .opt {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border-radius: 16px;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      .opt:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+      .opt-title {
+        font-size: 13px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.92);
+        line-height: 20px;
+      }
+      .opt-sub {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.68);
+        line-height: 18px;
+      }
+      .thumb {
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      .thumb:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+      .thumb-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .thumb-tag {
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 900;
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      .thumb-title {
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.88);
+      }
+      .thumb-body {
+        padding: 12px;
+      }
+      .line {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        margin-top: 10px;
+      }
+      .mini-block {
+        height: 26px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+    </style>
+  </body>
+</html>

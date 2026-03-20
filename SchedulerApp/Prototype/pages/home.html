@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - 主控制台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            colors: {
+              winbg: "rgba(20,20,23,.70)",
+              winpanel: "rgba(255,255,255,.08)"
+            },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.35)",
+              soft: "0 10px 30px rgba(0,0,0,.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <style>
+      .schedule-bg {
+        background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, rgba(0, 0, 0, 0) 1px);
+        background-size: 100% 56px;
+      }
+      .schedule-bg::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image: linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, rgba(0, 0, 0, 0) 1px);
+        background-size: calc(100% / 7) 100%;
+        opacity: 0.9;
+      }
+      .course-block.conflict {
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.95), 0 10px 24px rgba(0, 0, 0, 0.25);
+      }
+    </style>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-70"
+        alt="Desk background"
+        src="https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=2200&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/50 via-zinc-950/55 to-zinc-950/85"></div>
+    </div>
+
+    <div class="mx-auto flex min-h-[760px] max-w-[1180px] items-center justify-center p-6">
+      <div class="w-[1180px] rounded-[18px] border border-white/15 bg-winbg shadow-win backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-sky-400 to-violet-400 shadow-soft"></div>
+            <div>
+              <div class="text-sm font-semibold leading-4">SchedulerApp</div>
+              <div class="mt-0.5 text-xs text-zinc-300">主控制台 · 周视图 · 支持临时覆盖</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="hidden lg:flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 ring-1 ring-white/15">
+              <i class="fa-solid fa-magnifying-glass text-zinc-300"></i>
+              <input
+                class="w-[320px] bg-transparent text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+                placeholder="全局搜索：老师 / 学员 / 备注"
+              />
+              <span class="rounded-md bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">Ctrl K</span>
+            </div>
+
+            <div class="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 ring-1 ring-white/15">
+              <img
+                class="h-7 w-7 rounded-full object-cover ring-1 ring-white/20"
+                alt="User avatar"
+                src="https://images.unsplash.com/photo-1520975958225-2a9b6a52a0f4?auto=format&fit=crop&w=200&q=70"
+              />
+              <div class="hidden sm:block">
+                <div class="text-xs font-medium leading-4">管理员</div>
+                <div class="text-[11px] text-zinc-300 leading-4">今日：03.13</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <button class="win-btn" aria-label="Minimize"><i class="fa-solid fa-minus"></i></button>
+              <button class="win-btn" aria-label="Maximize"><i class="fa-regular fa-square"></i></button>
+              <button class="win-btn win-btn--danger" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 p-4">
+          <aside class="col-span-3 rounded-2xl border border-white/10 bg-winpanel p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">操作面板</div>
+              <div class="text-xs text-zinc-300">常驻入口</div>
+            </div>
+
+            <div class="mt-3 grid gap-2">
+              <button class="action-btn" data-open="studentEditor" data-mode="add">
+                <span class="action-ico bg-emerald-500/20 text-emerald-200"><i class="fa-solid fa-user-plus"></i></span>
+                <span>
+                  <div class="text-sm font-semibold leading-5">新增学员</div>
+                  <div class="text-xs text-zinc-300 leading-5">写入基础排课（Master）</div>
+                </span>
+              </button>
+
+              <button class="action-btn" data-open="studentEditor" data-mode="edit">
+                <span class="action-ico bg-sky-500/20 text-sky-200"><i class="fa-solid fa-pen-to-square"></i></span>
+                <span>
+                  <div class="text-sm font-semibold leading-5">更改学员</div>
+                  <div class="text-xs text-zinc-300 leading-5">全局搜索 / 从色块双击</div>
+                </span>
+              </button>
+
+              <button class="action-btn" data-open="overrideEditor">
+                <span class="action-ico bg-violet-500/20 text-violet-200"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                <span>
+                  <div class="text-sm font-semibold leading-5">临时调整</div>
+                  <div class="text-xs text-zinc-300 leading-5">写入临时覆盖（Override）</div>
+                </span>
+              </button>
+
+              <button class="action-btn" data-open="exportPreview">
+                <span class="action-ico bg-amber-500/20 text-amber-200"><i class="fa-solid fa-file-pdf"></i></span>
+                <span>
+                  <div class="text-sm font-semibold leading-5">导出本周 PDF</div>
+                  <div class="text-xs text-zinc-300 leading-5">含“变动通知”第一页</div>
+                </span>
+              </button>
+
+              <button class="action-btn" data-open="deleteConfirm">
+                <span class="action-ico bg-rose-500/20 text-rose-200"><i class="fa-solid fa-trash-can"></i></span>
+                <span>
+                  <div class="text-sm font-semibold leading-5">删除管理</div>
+                  <div class="text-xs text-zinc-300 leading-5">老师/学员二次确认</div>
+                </span>
+              </button>
+            </div>
+
+            <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-semibold">数据关系</div>
+                <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">持续使用</span>
+              </div>
+              <div class="mt-2 grid gap-2 text-xs text-zinc-300">
+                <div class="flex items-start gap-2">
+                  <span class="mt-1 inline-block h-2 w-2 rounded-full bg-sky-400"></span>
+                  <span>基础排课：周几/时间/起止日期（持续渲染）</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="mt-1 inline-block h-2 w-2 rounded-full bg-violet-400"></span>
+                  <span>临时覆盖：特定日期变动（优先级更高）</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
+                  <span>老师/学员库：全局资料（删除需检查关联）</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <main class="col-span-6 rounded-2xl border border-white/10 bg-winpanel p-3">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <div id="scheduleTitle" class="text-sm font-semibold">总课表</div>
+                <div id="scheduleSub" class="mt-0.5 text-xs text-zinc-300">双击任意色块直接“更改学员”</div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button class="chip-btn" data-week="-1"><i class="fa-solid fa-chevron-left"></i><span>上一周</span></button>
+                <div id="weekLabel" class="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold ring-1 ring-white/15">
+                  2026年3月 第2周 <span class="text-zinc-300 font-medium">(03.09 - 03.15)</span>
+                </div>
+                <button class="chip-btn" data-week="1"><span>下一周</span><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="chip-btn" data-week="0"><i class="fa-regular fa-calendar-days"></i><span>回到本周</span></button>
+              </div>
+            </div>
+
+            <div class="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+              <div class="grid grid-cols-[84px_repeat(7,minmax(0,1fr))] border-b border-white/10 bg-white/5 text-xs text-zinc-300">
+                <div class="px-3 py-2">时间</div>
+                <div class="px-3 py-2">周一</div>
+                <div class="px-3 py-2">周二</div>
+                <div class="px-3 py-2">周三</div>
+                <div class="px-3 py-2">周四</div>
+                <div class="px-3 py-2">周五</div>
+                <div class="px-3 py-2">周六</div>
+                <div class="px-3 py-2">周日</div>
+              </div>
+
+              <div class="flex">
+                <div class="w-[84px] border-r border-white/10 bg-white/5">
+                  <div class="h-[672px] win-scroll overflow-auto">
+                    <div class="grid">
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">08:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">09:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">10:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">11:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">12:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">13:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">14:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">15:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">16:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">17:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">18:00</div>
+                      <div class="h-[56px] px-3 py-2 text-xs text-zinc-300">19:00</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative flex-1">
+                  <div class="relative h-[672px] schedule-bg">
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-black/10"></div>
+
+                    <div class="absolute inset-0 grid grid-cols-7">
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                    </div>
+
+                    <div class="absolute inset-0 grid grid-cols-7 gap-0 px-1 py-1">
+                      <div class="relative">
+                        <div
+                          class="course-block absolute left-1 right-1 rounded-xl border border-white/10 bg-gradient-to-br from-sky-400/90 to-sky-600/80 p-2 text-xs shadow-soft backdrop-blur-sm"
+                          style="top: 112px; height: 56px"
+                          data-course-id="c101"
+                          data-student="小明"
+                          data-teacher="林老师"
+                          data-start="10:00"
+                          data-end="11:00"
+                          data-subject="英语"
+                          data-weekday="1"
+                        >
+                          <div class="flex items-center justify-between">
+                            <div class="font-semibold">小明</div>
+                            <span class="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">林</span>
+                          </div>
+                          <div class="mt-0.5 text-[11px] text-white/90">10:00 - 11:00 · 英语</div>
+                        </div>
+
+                        <div
+                          class="course-block absolute left-1 right-1 rounded-xl border border-white/10 bg-gradient-to-br from-emerald-400/90 to-emerald-600/80 p-2 text-xs shadow-soft backdrop-blur-sm"
+                          style="top: 364px; height: 84px"
+                          data-course-id="c102"
+                          data-student="琪琪"
+                          data-teacher="周老师"
+                          data-start="14:30"
+                          data-end="16:00"
+                          data-subject="数学"
+                          data-weekday="1"
+                        >
+                          <div class="flex items-center justify-between">
+                            <div class="font-semibold">琪琪</div>
+                            <span class="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">周</span>
+                          </div>
+                          <div class="mt-0.5 text-[11px] text-white/90">14:30 - 16:00 · 数学</div>
+                        </div>
+                      </div>
+
+                      <div class="relative">
+                        <div
+                          class="course-block absolute left-1 right-1 rounded-xl border border-white/10 bg-gradient-to-br from-violet-400/90 to-violet-600/80 p-2 text-xs shadow-soft backdrop-blur-sm"
+                          style="top: 196px; height: 56px"
+                          data-course-id="c201"
+                          data-student="Leo"
+                          data-teacher="王老师"
+                          data-start="11:30"
+                          data-end="12:30"
+                          data-subject="物理"
+                          data-weekday="2"
+                        >
+                          <div class="flex items-center justify-between">
+                            <div class="font-semibold">Leo</div>
+                            <span class="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">王</span>
+                          </div>
+                          <div class="mt-0.5 text-[11px] text-white/90">11:30 - 12:30 · 物理</div>
+                        </div>
+
+                        <div
+                          class="course-block absolute left-1 right-1 rounded-xl border border-white/10 bg-gradient-to-br from-sky-400/90 to-sky-600/80 p-2 text-xs shadow-soft backdrop-blur-sm"
+                          style="top: 420px; height: 56px"
+                          data-course-id="c202"
+                          data-student="圆圆"
+                          data-teacher="林老师"
+                          data-start="15:30"
+                          data-end="16:30"
+                          data-subject="语文"
+                          data-weekday="2"
+                        >
+                          <div class="flex items-center justify-between">
+                            <div class="font-semibold">圆圆</div>
+                            <span class="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">林</span>
+                          </div>
+                          <div class="mt-0.5 text-[11px] text-white/90">15:30 - 16:30 · 语文</div>
+                        </div>
+                      </div>
+
+                      <div class="relative">
+                        <div
+                          class="course-block absolute left-1 right-1 rounded-xl border border-white/10 bg-gradient-to-br from-amber-300/90 to-amber-500/80 p-2 text-xs shadow-soft backdrop-blur-sm"
+                          style="top: 84px; height: 56px"
+                          data-course-id="c301"
+                          data-student="Nina"
+                          data-teacher="陈老师"
+                          data-start="09:30"
+                          data-end="10:30"
+                          data-subject="化学"
+                          data-weekday="3"
+                        >
+                          <div class="flex items-center justify-between">
+                            <div class="font-semibold">Nina</div>
+                            <span class="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">陈</span>
+                          </div>
+                          <div class="mt-0.5 text-[11px] text-white/90">09:30 - 10:30 · 化学</div>
+                        </div>
+                      </div>
+
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                      <div class="relative"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <aside class="col-span-3 rounded-2xl border border-white/10 bg-winpanel p-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm font-semibold">老师面板</div>
+                <div class="mt-0.5 text-xs text-zinc-300">点击切换视图 · 右键删除/导出</div>
+              </div>
+              <button class="rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold ring-1 ring-white/15 hover:bg-white/15">
+                <i class="fa-solid fa-user-plus mr-2"></i>添加老师
+              </button>
+            </div>
+
+            <div class="mt-3 grid gap-2">
+              <button class="teacher-item" data-teacher="林老师" data-color="sky">
+                <span class="h-3 w-3 rounded-full bg-sky-400"></span>
+                <span class="flex-1 text-left">
+                  <div class="text-sm font-semibold leading-5">林老师</div>
+                  <div class="text-xs text-zinc-300 leading-5">12 名学员 · 英语/语文</div>
+                </span>
+                <i class="fa-solid fa-chevron-right text-zinc-400"></i>
+              </button>
+
+              <button class="teacher-item" data-teacher="周老师" data-color="emerald">
+                <span class="h-3 w-3 rounded-full bg-emerald-400"></span>
+                <span class="flex-1 text-left">
+                  <div class="text-sm font-semibold leading-5">周老师</div>
+                  <div class="text-xs text-zinc-300 leading-5">9 名学员 · 数学</div>
+                </span>
+                <i class="fa-solid fa-chevron-right text-zinc-400"></i>
+              </button>
+
+              <button class="teacher-item" data-teacher="王老师" data-color="violet">
+                <span class="h-3 w-3 rounded-full bg-violet-400"></span>
+                <span class="flex-1 text-left">
+                  <div class="text-sm font-semibold leading-5">王老师</div>
+                  <div class="text-xs text-zinc-300 leading-5">6 名学员 · 物理</div>
+                </span>
+                <i class="fa-solid fa-chevron-right text-zinc-400"></i>
+              </button>
+
+              <button class="teacher-item" data-teacher="陈老师" data-color="amber">
+                <span class="h-3 w-3 rounded-full bg-amber-300"></span>
+                <span class="flex-1 text-left">
+                  <div class="text-sm font-semibold leading-5">陈老师</div>
+                  <div class="text-xs text-zinc-300 leading-5">4 名学员 · 化学</div>
+                </span>
+                <i class="fa-solid fa-chevron-right text-zinc-400"></i>
+              </button>
+            </div>
+
+            <div class="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-semibold">本周备注</div>
+                <button class="rounded-lg bg-white/10 px-2 py-1 text-xs font-semibold ring-1 ring-white/10 hover:bg-white/15">
+                  <i class="fa-solid fa-pen mr-1"></i>编辑
+                </button>
+              </div>
+              <div class="mt-2 text-xs text-zinc-300 leading-6">
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-circle-info mt-1 text-sky-300"></i>
+                  <span>周三家长会，周三晚 18:00 后不排课</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-bell mt-1 text-amber-300"></i>
+                  <span>周五统一测评，导出给家长时可隐藏内部备注</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/55 p-6">
+      <div class="w-[860px] max-w-[95vw] overflow-hidden rounded-2xl border border-white/15 bg-zinc-900/70 shadow-win backdrop-blur-2xl">
+        <iframe id="overlayFrame" class="h-[640px] w-full" title="overlay" src="about:blank"></iframe>
+      </div>
+    </div>
+
+    <div
+      id="teacherMenu"
+      class="hidden fixed z-[60] w-56 overflow-hidden rounded-2xl border border-white/15 bg-zinc-900/80 shadow-win backdrop-blur-2xl"
+    >
+      <button class="menu-item" data-action="exportTeacher"><i class="fa-solid fa-file-pdf"></i><span>导出该老师 PDF</span></button>
+      <button class="menu-item menu-item--danger" data-action="deleteTeacher"><i class="fa-solid fa-trash-can"></i><span>删除该老师…</span></button>
+    </div>
+
+    <script src="../shared/ui.global.js"></script>
+    <script>
+      const { onMessage, qs, qsa, show, hide } = window.ProtoUI;
+
+      const overlay = qs("#overlay");
+      const overlayFrame = qs("#overlayFrame");
+      const teacherMenu = qs("#teacherMenu");
+      let teacherMenuCtx = { teacher: null };
+      let activeTeacher = null;
+      const scheduleTitle = qs("#scheduleTitle");
+      const scheduleSub = qs("#scheduleSub");
+      const weekLabel = qs("#weekLabel");
+      const baseWeekStart = new Date("2026-03-09T00:00:00");
+      let weekStart = new Date(baseWeekStart);
+
+      function openOverlay(src) {
+        overlayFrame.src = src;
+        show(overlay);
+      }
+
+      function closeOverlay() {
+        overlayFrame.src = "about:blank";
+        hide(overlay);
+      }
+
+      function closeTeacherMenu() {
+        hide(teacherMenu);
+        teacherMenuCtx = { teacher: null };
+      }
+
+      function fmt2(n) {
+        return String(n).padStart(2, "0");
+      }
+
+      function formatWeekLabel(start) {
+        const y = start.getFullYear();
+        const m = start.getMonth() + 1;
+        const startDay = start.getDate();
+        const weekOfMonth = Math.floor((startDay - 1) / 7) + 1;
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        return `${y}年${m}月 第${weekOfMonth}周 <span class="text-zinc-300 font-medium">(${fmt2(m)}.${fmt2(
+          start.getDate()
+        )} - ${fmt2(end.getMonth() + 1)}.${fmt2(end.getDate())})</span>`;
+      }
+
+      function applyWeekLabel() {
+        weekLabel.innerHTML = formatWeekLabel(weekStart);
+      }
+
+      function applyTeacherFilter(teacher) {
+        activeTeacher = teacher || null;
+        if (!activeTeacher) {
+          scheduleTitle.textContent = "总课表";
+          scheduleSub.textContent = "双击任意色块直接“更改学员”";
+          qsa(".course-block").forEach((b) => b.classList.remove("hidden"));
+          return;
+        }
+        scheduleTitle.textContent = `${activeTeacher} · 个人课表`;
+        scheduleSub.textContent = "仅显示该老师本周课程（双击色块可直接更改）";
+        qsa(".course-block").forEach((b) => {
+          const ok = (b.dataset.teacher || "") === activeTeacher;
+          b.classList.toggle("hidden", !ok);
+        });
+      }
+
+      function openStudentEditor(params) {
+        const usp = new URLSearchParams();
+        Object.entries(params || {}).forEach(([k, v]) => {
+          if (v === undefined || v === null || v === "") return;
+          usp.set(k, String(v));
+        });
+        const qsStr = usp.toString();
+        openOverlay("./student-editor.html" + (qsStr ? `?${qsStr}` : ""));
+      }
+
+      qsa("[data-open]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.open;
+          if (target === "studentEditor") openStudentEditor({ mode: btn.dataset.mode || "edit" });
+          if (target === "overrideEditor") openOverlay("./override-editor.html");
+          if (target === "exportPreview") openOverlay("./export-preview.html");
+          if (target === "deleteConfirm") openOverlay("./delete-confirm.html");
+        });
+      });
+
+      qsa(".course-block").forEach((block) => {
+        block.addEventListener("dblclick", () => {
+          openStudentEditor({
+            mode: "edit",
+            courseId: block.dataset.courseId,
+            teacher: block.dataset.teacher,
+            student: block.dataset.student,
+            start: block.dataset.start,
+            end: block.dataset.end,
+            subject: block.dataset.subject,
+            weekday: block.dataset.weekday
+          });
+        });
+      });
+
+      qs("#overlay").addEventListener("click", (e) => {
+        if (e.target === overlay) closeOverlay();
+      });
+
+      qsa("[data-week]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const step = Number(btn.dataset.week || 0);
+          if (step === 0) weekStart = new Date(baseWeekStart);
+          else {
+            const next = new Date(weekStart);
+            next.setDate(next.getDate() + step * 7);
+            weekStart = next;
+          }
+          applyWeekLabel();
+        });
+      });
+
+      qsa(".teacher-item").forEach((item) => {
+        item.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          teacherMenuCtx = { teacher: item.dataset.teacher || null };
+          teacherMenu.style.left = `${Math.min(window.innerWidth - 240, e.clientX)}px`;
+          teacherMenu.style.top = `${Math.min(window.innerHeight - 140, e.clientY)}px`;
+          show(teacherMenu);
+        });
+        item.addEventListener("click", () => {
+          qsa(".teacher-item").forEach((x) => x.classList.remove("ring-2", "ring-sky-400/60"));
+          if (activeTeacher === item.dataset.teacher) {
+            applyTeacherFilter(null);
+          } else {
+            item.classList.add("ring-2", "ring-sky-400/60");
+            applyTeacherFilter(item.dataset.teacher);
+          }
+        });
+      });
+
+      teacherMenu.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-action]");
+        if (!btn) return;
+        const action = btn.dataset.action;
+        if (action === "deleteTeacher") {
+          const t = teacherMenuCtx.teacher || "";
+          openOverlay("./delete-confirm.html?kind=teacher&target=" + encodeURIComponent(t));
+        }
+        if (action === "exportTeacher") {
+          const t = teacherMenuCtx.teacher || "";
+          openOverlay("./export-preview.html?scope=teacher&teacher=" + encodeURIComponent(t));
+        }
+        closeTeacherMenu();
+      });
+
+      window.addEventListener("click", (e) => {
+        if (teacherMenu.classList.contains("hidden")) return;
+        if (e.target.closest("#teacherMenu")) return;
+        closeTeacherMenu();
+      });
+
+      onMessage(({ type, payload }) => {
+        if (type === "closeOverlay") closeOverlay();
+        if (type === "forceOverride") {
+          qsa(".course-block").forEach((b) => {
+            const id = b.dataset.courseId;
+            if (!payload?.courseIds || payload.courseIds.includes(id)) b.classList.add("conflict");
+          });
+          closeOverlay();
+        }
+      });
+
+      applyWeekLabel();
+    </script>
+
+    <style>
+      .win-btn {
+        height: 36px;
+        width: 40px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.85);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .win-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .win-btn--danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+      .action-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      .action-btn:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+      .action-ico {
+        height: 40px;
+        width: 40px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .chip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.10);
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .chip-btn:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+      .teacher-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+      }
+      .teacher-item:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+      .menu-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
+      }
+      .menu-item:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+      .menu-item--danger:hover {
+        background: rgba(239, 68, 68, 0.18);
+      }
+    </style>
+  </body>
+</html>

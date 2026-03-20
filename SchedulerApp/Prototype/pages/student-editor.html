@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - 添加/更改学员</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.35)",
+              soft: "0 10px 30px rgba(0,0,0,.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+  </head>
+  <body class="min-h-[720px] bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-70"
+        alt="Background"
+        src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=2200&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/55 via-zinc-950/60 to-zinc-950/90"></div>
+    </div>
+
+    <div class="mx-auto flex min-h-[720px] max-w-[860px] items-center justify-center p-6">
+      <div class="w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10 shadow-win backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/20 text-sky-200 ring-1 ring-white/15">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <div>
+              <div id="title" class="text-sm font-semibold leading-4">更改学员</div>
+              <div class="mt-0.5 text-xs text-zinc-300 leading-4">从色块进入自动带入信息；也可作为全局入口</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold ring-1 ring-white/15">
+              <input id="mockConflict" type="checkbox" class="h-4 w-4 accent-rose-500" checked />
+              <span>模拟冲突</span>
+            </label>
+            <button id="closeBtn" class="h-9 w-10 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 p-4">
+          <section class="col-span-7 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">基础信息</div>
+              <div class="flex items-center gap-2">
+                <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">Master</span>
+              </div>
+            </div>
+
+            <div class="mt-3 grid gap-3">
+              <div class="grid grid-cols-2 gap-3">
+                <label class="field">
+                  <span class="field-label">老师</span>
+                  <select id="teacherSelect" class="field-input">
+                    <option>林老师（Sky）</option>
+                    <option>周老师（Emerald）</option>
+                    <option>王老师（Violet）</option>
+                    <option>陈老师（Amber）</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">学员</span>
+                  <input id="studentInput" class="field-input" value="小明" />
+                </label>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <label class="field">
+                  <span class="field-label">开始日期</span>
+                  <input id="startDate" class="field-input" type="date" value="2026-03-01" />
+                </label>
+                <div class="field">
+                  <div class="flex items-center justify-between">
+                    <span class="field-label">终止日期</span>
+                    <label class="flex items-center gap-2 text-xs text-zinc-300">
+                      <input id="endForever" type="checkbox" class="h-4 w-4 accent-sky-500" checked />
+                      <span>持续</span>
+                    </label>
+                  </div>
+                  <input id="endDate" class="field-input" type="date" disabled />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="field">
+                  <span class="field-label">上课时间</span>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input id="startTime" class="field-input" type="time" value="10:00" />
+                    <input id="endTime" class="field-input" type="time" value="11:00" />
+                  </div>
+                </div>
+                <label class="field">
+                  <span class="field-label">科目</span>
+                  <input id="subjectInput" class="field-input" value="英语" />
+                </label>
+              </div>
+
+              <div class="field">
+                <span class="field-label">重复规则（周几）</span>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <button class="chip chip-on" data-day="1">周一</button>
+                  <button class="chip" data-day="2">周二</button>
+                  <button class="chip" data-day="3">周三</button>
+                  <button class="chip" data-day="4">周四</button>
+                  <button class="chip" data-day="5">周五</button>
+                  <button class="chip" data-day="6">周六</button>
+                  <button class="chip" data-day="0">周日</button>
+                </div>
+              </div>
+
+              <label class="field">
+                <span class="field-label">备注</span>
+                <textarea class="field-input h-24 resize-none">家长希望每周给一次作业反馈。</textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="col-span-5 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">快速预览</div>
+              <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-zinc-300 ring-1 ring-white/10">自动带入</span>
+            </div>
+
+            <div class="mt-3 rounded-2xl border border-white/10 bg-gradient-to-br from-sky-400/75 to-sky-700/60 p-3 shadow-soft">
+              <div class="flex items-center justify-between">
+                <div id="pvStudent" class="text-sm font-semibold">小明</div>
+                <span id="pvTeacher" class="rounded-md bg-white/20 px-2 py-0.5 text-[11px]">林老师</span>
+              </div>
+              <div id="pvDetail" class="mt-1 text-xs text-white/90">周一 · 10:00 - 11:00 · 英语</div>
+              <div class="mt-2 rounded-xl bg-black/15 px-2 py-1 text-[11px] text-white/85 ring-1 ring-white/10">
+                双击课表色块即可打开本窗口
+              </div>
+            </div>
+
+            <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div class="text-sm font-semibold">冲突策略</div>
+              <div class="mt-2 space-y-2 text-xs text-zinc-300 leading-6">
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-triangle-exclamation mt-1 text-rose-300"></i>
+                  <span>检测到时间重叠时，弹出二次确认。</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-rotate-left mt-1 text-sky-300"></i>
+                  <span>重新修改：返回本页继续调整。</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-shield-heart mt-1 text-amber-300"></i>
+                  <span>强制覆盖：仍允许保存，并在课表上加红边提醒。</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div class="text-sm font-semibold">删除保护</div>
+              <div class="mt-2 text-xs text-zinc-300 leading-6">
+                删除老师前提示该老师名下仍有学员，并要求二次确认。
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/10 bg-white/5 px-4 py-3">
+          <button id="cancelBtn" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+            取消
+          </button>
+          <div class="flex items-center gap-2">
+            <button
+              id="saveBtn"
+              class="rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-sky-400"
+            >
+              更新记录
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="innerOverlay" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/55 p-6">
+      <div class="w-[760px] max-w-[95vw] overflow-hidden rounded-2xl border border-white/15 bg-zinc-900/70 shadow-win backdrop-blur-2xl">
+        <iframe id="innerFrame" class="h-[560px] w-full" title="innerOverlay" src="about:blank"></iframe>
+      </div>
+    </div>
+
+    <script src="../shared/ui.global.js"></script>
+    <script>
+      const { onMessage, postToParent, qs, qsa, show, hide } = window.ProtoUI;
+
+      const innerOverlay = qs("#innerOverlay");
+      const innerFrame = qs("#innerFrame");
+      const title = qs("#title");
+      const saveBtn = qs("#saveBtn");
+      const teacherSelect = qs("#teacherSelect");
+      const studentInput = qs("#studentInput");
+      const startTime = qs("#startTime");
+      const endTime = qs("#endTime");
+      const subjectInput = qs("#subjectInput");
+      const pvStudent = qs("#pvStudent");
+      const pvTeacher = qs("#pvTeacher");
+      const pvDetail = qs("#pvDetail");
+      const endForever = qs("#endForever");
+      const endDate = qs("#endDate");
+      const startDate = qs("#startDate");
+      const mockConflict = qs("#mockConflict");
+      const weekdayLabels = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+      let editCtx = { courseId: null, weekday: 1 };
+
+      function openInner(src) {
+        innerFrame.src = src;
+        show(innerOverlay);
+      }
+
+      function closeInner() {
+        innerFrame.src = "about:blank";
+        hide(innerOverlay);
+      }
+
+      function closeSelf() {
+        postToParent("closeOverlay");
+        if (window.parent === window) window.close();
+      }
+
+      function openConflict() {
+        openInner("./conflict-confirm.html");
+      }
+
+      function syncEndDateUI() {
+        const forever = endForever.checked;
+        endDate.disabled = forever;
+        if (forever) endDate.value = "";
+        else if (!endDate.value) endDate.value = startDate.value;
+      }
+
+      syncEndDateUI();
+      endForever.addEventListener("change", syncEndDateUI);
+      startDate.addEventListener("change", () => {
+        if (!endDate.value && !endForever.checked) endDate.value = startDate.value;
+        if (endForever.checked) endDate.value = "";
+      });
+
+      qsa(".chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          btn.classList.toggle("chip-on");
+        });
+      });
+
+      function syncPreview() {
+        pvStudent.textContent = studentInput.value || "（未命名学员）";
+        const teacherText = (teacherSelect.value || "").split("（")[0] || "（未选老师）";
+        pvTeacher.textContent = teacherText;
+        const wd = weekdayLabels[Number(editCtx.weekday) || 0] || "周一";
+        pvDetail.textContent = `${wd} · ${startTime.value || "--:--"} - ${endTime.value || "--:--"} · ${subjectInput.value || "—"}`;
+      }
+
+      [teacherSelect, studentInput, startTime, endTime, subjectInput].forEach((el) => el.addEventListener("input", syncPreview));
+      teacherSelect.addEventListener("change", syncPreview);
+
+      function applyMode(mode) {
+        if (mode === "add") {
+          title.textContent = "添加学员";
+          saveBtn.textContent = "保存";
+          mockConflict.checked = false;
+          return;
+        }
+        title.textContent = "更改学员";
+        saveBtn.textContent = "更新记录";
+      }
+
+      function applyParams() {
+        const usp = new URLSearchParams(location.search);
+        const mode = usp.get("mode") || "edit";
+        applyMode(mode);
+
+        const teacher = usp.get("teacher");
+        const student = usp.get("student");
+        const start = usp.get("start");
+        const end = usp.get("end");
+        const subject = usp.get("subject");
+        const weekday = usp.get("weekday");
+        const courseId = usp.get("courseId");
+
+        editCtx.courseId = courseId;
+        if (weekday) editCtx.weekday = Number(weekday);
+
+        if (teacher) {
+          const options = Array.from(teacherSelect.options);
+          const match = options.find((o) => (o.textContent || "").startsWith(teacher));
+          if (match) teacherSelect.value = match.textContent;
+        }
+        if (student) studentInput.value = student;
+        if (start) startTime.value = start;
+        if (end) endTime.value = end;
+        if (subject) subjectInput.value = subject;
+      }
+
+      applyParams();
+      syncPreview();
+
+      saveBtn.addEventListener("click", () => {
+        if (mockConflict.checked) openConflict();
+        else closeSelf();
+      });
+
+      [qs("#cancelBtn"), qs("#closeBtn")].forEach((btn) => btn.addEventListener("click", closeSelf));
+
+      innerOverlay.addEventListener("click", (e) => {
+        if (e.target === innerOverlay) closeInner();
+      });
+
+      onMessage(({ type }) => {
+        if (type === "closeOverlay") closeInner();
+        if (type === "editAgain") closeInner();
+        if (type === "forceOverride") {
+          postToParent("forceOverride", { courseIds: editCtx.courseId ? [editCtx.courseId] : ["c101", "c202"] });
+          closeSelf();
+        }
+      });
+    </script>
+
+    <style>
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.72);
+        font-weight: 600;
+      }
+      .field-input {
+        width: 100%;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+        outline: none;
+      }
+      .field-input:focus {
+        border-color: rgba(56, 189, 248, 0.55);
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+      }
+      .chip {
+        border-radius: 999px;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .chip:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .chip-on {
+        background: rgba(14, 165, 233, 0.25);
+        border-color: rgba(14, 165, 233, 0.35);
+        color: rgba(255, 255, 255, 0.95);
+      }
+    </style>
+  </body>
+</html>

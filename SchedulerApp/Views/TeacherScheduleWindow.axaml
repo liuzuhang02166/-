@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        x:Class="SchedulerApp.Views.TeacherScheduleWindow"
+        x:DataType="vm:TeacherScheduleWindowViewModel"
+        Width="1100"
+        Height="760"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding TeacherName}">
+  <Border Classes="card" Margin="18">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="14">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+        <StackPanel Spacing="2">
+          <TextBlock Text="{Binding TeacherName}" FontSize="14" FontWeight="SemiBold" />
+          <TextBlock Text="查看该老师的周课表" FontSize="12" Foreground="#6B7280" />
+        </StackPanel>
+        <Button Name="EditTeacherColorButton" Grid.Column="1" Classes="secondary" Padding="12,8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="mdl2" Text="&#xE790;" Foreground="#6B7280" />
+            <TextBlock Text="设置颜色" FontSize="12" />
+          </StackPanel>
+        </Button>
+        <Button Name="PrevWeekButton" Grid.Column="2" Classes="secondary" Padding="12,8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="mdl2" Text="&#xE72B;" Foreground="#6B7280" />
+            <TextBlock Text="上一周" FontSize="12" />
+          </StackPanel>
+        </Button>
+        <Button Name="NextWeekButton" Grid.Column="3" Classes="secondary" Padding="12,8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="下一周" FontSize="12" />
+            <TextBlock Classes="mdl2" Text="&#xE72A;" Foreground="#6B7280" />
+          </StackPanel>
+        </Button>
+        <Button Name="ThisWeekButton" Grid.Column="4" Classes="primary" Padding="12,8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="mdl2" Text="&#xE787;" />
+            <TextBlock Text="回到本周" FontSize="12" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <TextBlock Grid.Row="1" Text="{Binding WeekRangeText}" Foreground="#6B7280" Margin="0,10,0,12" />
+
+      <Border Grid.Row="2" CornerRadius="16" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" ClipToBounds="True">
+        <ScrollViewer Margin="12" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding WeekDays}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="7" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:DayScheduleViewModel">
+                <Border CornerRadius="14" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" Margin="0,0,10,0" Padding="10" ClipToBounds="True">
+                  <StackPanel Spacing="10">
+                    <TextBlock Text="{Binding DateText}" FontSize="12" FontWeight="SemiBold" Foreground="#111827" />
+                    <ItemsControl ItemsSource="{Binding Items}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ScheduleOccurrenceViewModel">
+                          <Border CornerRadius="12"
+                                  Background="{Binding Background}"
+                                  BorderBrush="{Binding BorderBrush}"
+                                  BorderThickness="1"
+                                  Padding="10"
+                                  Margin="0,0,0,10"
+                                  ClipToBounds="True">
+                            <StackPanel Spacing="6">
+                              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <TextBlock Text="{Binding TimeRange}" FontSize="11" Foreground="#2563EB" />
+                                <Border Grid.Column="1"
+                                        CornerRadius="999"
+                                        Background="#FFFFFF"
+                                        BorderBrush="#E5E7EB"
+                                        BorderThickness="1"
+                                        Padding="8,3">
+                                  <TextBlock Text="{Binding Badge}" FontSize="10" Foreground="#374151" />
+                                </Border>
+                              </Grid>
+                              <TextBlock Text="{Binding TeacherName}" FontSize="11" Foreground="#2563EB" />
+                              <TextBlock Text="{Binding StudentName}" FontSize="13" FontWeight="SemiBold" />
+                              <TextBlock Text="{Binding Content}" FontSize="11" Foreground="#374151" />
+                              <TextBlock Text="{Binding Note}" FontSize="10" Foreground="#6B7280" TextWrapping="Wrap" />
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

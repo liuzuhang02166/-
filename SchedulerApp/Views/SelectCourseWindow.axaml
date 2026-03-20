@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        xmlns:m="using:SchedulerApp.Models"
+        x:Class="SchedulerApp.Views.SelectCourseWindow"
+        x:DataType="vm:SelectCourseDialogViewModel"
+        Width="640"
+        Height="520"
+        WindowStartupLocation="CenterOwner"
+        Title="选择要更改的学员">
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="16">
+    <TextBlock Text="老师" />
+    <ComboBox Grid.Row="1" ItemsSource="{Binding Teachers}" SelectedItem="{Binding SelectedTeacher, Mode=TwoWay}" Margin="0,6,0,10">
+      <ComboBox.ItemTemplate>
+        <DataTemplate x:DataType="m:Teacher">
+          <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <Border Grid.Row="2" BorderBrush="#DDD" BorderThickness="1">
+      <ListBox ItemsSource="{Binding Courses}" SelectedItem="{Binding SelectedCourse, Mode=TwoWay}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:CourseSummary">
+            <TextBlock Text="{Binding DisplayLine}" Margin="8,6" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+
+    <TextBlock Grid.Row="3" Text="{Binding Error}" Foreground="Tomato" Margin="0,10,0,0" />
+
+    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+      <Button Name="CancelButton" Content="取消" />
+      <Button Name="OkButton" Content="下一步" IsDefault="True" />
+    </StackPanel>
+  </Grid>
+</Window>

@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SchedulerApp.Views.ConfirmWindow"
+        Width="560"
+        Height="320"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+  <Border Classes="card" Margin="18">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+      <TextBlock Name="TitleText" FontSize="16" FontWeight="SemiBold" />
+
+      <Border Grid.Row="1"
+              CornerRadius="14"
+              Background="#F9FAFB"
+              BorderBrush="#E5E7EB"
+              BorderThickness="1"
+              Padding="12"
+              Margin="0,14,0,0">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <TextBlock Name="MessageText" FontSize="12" Foreground="#374151" TextWrapping="Wrap" />
+        </ScrollViewer>
+      </Border>
+
+      <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,14,0,0">
+        <Button Name="CancelButton" Classes="secondary" Padding="16,10" />
+        <Button Name="OkButton" Classes="primary" Padding="16,10" IsDefault="True" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

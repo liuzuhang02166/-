@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        x:Class="SchedulerApp.Views.AddTeacherWindow"
+        x:DataType="vm:AddTeacherDialogViewModel"
+        Width="360"
+        Height="260"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Title="添加老师">
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*" Margin="16">
+    <TextBlock Text="老师名称" />
+    <TextBox Grid.Row="1" Classes="field" Height="40" Text="{Binding Name}" />
+
+    <TextBlock Grid.Row="2" Text="颜色" Margin="0,12,0,0" />
+    <ComboBox Grid.Row="3"
+              Classes="field"
+              Height="40"
+              ItemsSource="{Binding ColorOptions}"
+              SelectedItem="{Binding SelectedColor, Mode=TwoWay}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:TeacherColorOption">
+          <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <TextBlock Grid.Row="4" Text="{Binding Error}" Foreground="Tomato" Margin="0,8,0,0" />
+    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0" Spacing="8">
+      <Button Name="CancelButton" Content="取消" />
+      <Button Name="OkButton" Content="确定" IsDefault="True" />
+    </StackPanel>
+  </Grid>
+</Window>

@@ -1,0 +1,213 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        xmlns:m="using:SchedulerApp.Models"
+        xmlns:conv="using:SchedulerApp.Converters"
+        x:Class="SchedulerApp.Views.OverrideEditorWindow"
+        x:DataType="vm:OverrideEditorDialogViewModel"
+        Width="860"
+        Height="640"
+        WindowStartupLocation="CenterOwner"
+        Title="临时调整">
+  <Window.Resources>
+    <conv:EnumEqualsConverter x:Key="EnumEq" />
+  </Window.Resources>
+
+  <Border Classes="card" Margin="18">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <Border Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="2">
+            <TextBlock Text="临时调整" FontSize="14" FontWeight="SemiBold" />
+            <TextBlock Text="仅影响单日 · 优先级高于基础排课（Override）" FontSize="12" Foreground="#6B7280" />
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text="{Binding Error}" Foreground="#FFB4B4" FontSize="12" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Row="1">
+        <Grid Margin="14" ColumnDefinitions="*,320" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto">
+          <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="16" Padding="12">
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="日期" FontSize="12" Foreground="#6B7280" />
+                  <DatePicker Classes="field" Height="32" SelectedDate="{Binding SelectedDate, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <TextBlock Text="动作" FontSize="12" Foreground="#6B7280" />
+                  <ComboBox Classes="field" Height="40" ItemsSource="{Binding Actions}" SelectedItem="{Binding SelectedAction, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:OverrideActionOption">
+                        <TextBlock Text="{Binding Text}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="老师" FontSize="12" Foreground="#6B7280" />
+                  <ComboBox Classes="field" Height="40" ItemsSource="{Binding Teachers}" SelectedItem="{Binding SelectedTeacher, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="m:Teacher">
+                        <TextBlock Text="{Binding Name}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <TextBlock Text="目标老师（仅窜课/加课）" FontSize="12" Foreground="#6B7280" />
+                  <ComboBox Classes="field" Height="40" ItemsSource="{Binding Teachers}" SelectedItem="{Binding TargetTeacher, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="m:Teacher">
+                        <TextBlock Text="{Binding Name}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Row="1"
+                  Background="#F9FAFB"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="16"
+                  Padding="12"
+                  IsVisible="{Binding SelectedAction.Kind, Converter={StaticResource EnumEq}, ConverterParameter=Move}">
+            <StackPanel Spacing="10">
+              <TextBlock Text="原课程（当日）" FontSize="13" FontWeight="SemiBold" />
+              <ComboBox Classes="field" Height="40" ItemsSource="{Binding CandidateCourses}" SelectedItem="{Binding SelectedCourse, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CourseOccurrenceOption">
+                    <TextBlock Text="{Binding DisplayLine}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+
+              <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="新开始时间" FontSize="12" Foreground="#6B7280" />
+                  <TextBox Classes="field" Height="32" Text="{Binding StartTime, Mode=TwoWay}" />
+                </StackPanel>
+                <TextBlock Text="—" VerticalAlignment="Bottom" Margin="0,0,0,6" Foreground="#6B7280" />
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Text="新结束时间" FontSize="12" Foreground="#6B7280" />
+                  <TextBox Classes="field" Height="32" Text="{Binding EndTime, Mode=TwoWay}" />
+                </StackPanel>
+              </Grid>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="说明（可选）" FontSize="12" Foreground="#6B7280" />
+                <TextBox Classes="field" Height="90" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Note, Mode=TwoWay}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Row="1"
+                  Background="#F9FAFB"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="16"
+                  Padding="12"
+                  IsVisible="{Binding SelectedAction.Kind, Converter={StaticResource EnumEq}, ConverterParameter=Cancel}">
+            <StackPanel Spacing="10">
+              <TextBlock Text="停课（当日取消）" FontSize="13" FontWeight="SemiBold" />
+              <ComboBox Classes="field" Height="40" ItemsSource="{Binding CandidateCourses}" SelectedItem="{Binding SelectedCourse, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CourseOccurrenceOption">
+                    <TextBlock Text="{Binding DisplayLine}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <StackPanel Spacing="6">
+                <TextBlock Text="说明（可选）" FontSize="12" Foreground="#6B7280" />
+                <TextBox Classes="field" Height="90" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Note, Mode=TwoWay}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Row="1"
+                  Background="#F9FAFB"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="16"
+                  Padding="12"
+                  IsVisible="{Binding SelectedAction.Kind, Converter={StaticResource EnumEq}, ConverterParameter=Add}">
+            <StackPanel Spacing="10">
+              <TextBlock Text="加课（当日新增）" FontSize="13" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="学员" FontSize="12" Foreground="#6B7280" />
+                  <TextBox Classes="field" Height="40" Text="{Binding StudentName, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <TextBlock Text="科目/内容" FontSize="12" Foreground="#6B7280" />
+                  <TextBox Classes="field" Height="40" Text="{Binding Content, Mode=TwoWay}" />
+                </StackPanel>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="开始时间" FontSize="12" Foreground="#6B7280" />
+                  <TextBox Classes="field" Height="32" Text="{Binding StartTime, Mode=TwoWay}" />
+                </StackPanel>
+                <TextBlock Text="—" VerticalAlignment="Bottom" Margin="0,0,0,6" Foreground="#6B7280" />
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Text="结束时间" FontSize="12" Foreground="#6B7280" />
+                  <TextBox Classes="field" Height="32" Text="{Binding EndTime, Mode=TwoWay}" />
+                </StackPanel>
+              </Grid>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="说明（可选）" FontSize="12" Foreground="#6B7280" />
+                <TextBox Classes="field" Height="90" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Note, Mode=TwoWay}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="16" Padding="12">
+            <StackPanel Spacing="10">
+              <TextBlock Text="目标老师当日空余" FontSize="13" FontWeight="SemiBold" />
+              <TextBlock Text="点击空余时间段会自动回填到时间输入框。" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+
+              <Border CornerRadius="14" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="10">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="时间段" FontSize="12" Foreground="#6B7280" />
+                  <ListBox ItemsSource="{Binding TimeSlots}"
+                           SelectedItem="{Binding SelectedTimeSlot, Mode=TwoWay}"
+                           Background="Transparent"
+                           BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:TimeSlotOption">
+                        <Border CornerRadius="12" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="10" Margin="0,0,0,8">
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <TextBlock Text="{Binding DisplayLine}" FontSize="12" VerticalAlignment="Center" />
+                            <Border Grid.Column="1" CornerRadius="999" Background="{Binding BadgeBackground}" BorderBrush="{Binding BadgeBorder}" BorderThickness="1" Padding="8,3" VerticalAlignment="Center">
+                              <TextBlock Text="{Binding BadgeText}" FontSize="10" />
+                            </Border>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </ScrollViewer>
+
+      <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+          <TextBlock Text="保存后会立即体现在本周课表中" Foreground="#6B7280" VerticalAlignment="Center" FontSize="12" />
+          <Button Name="CancelButton" Grid.Column="1" Classes="secondary" Content="取消" Padding="16,10" />
+          <Button Name="OkButton" Grid.Column="2" Classes="primary" Content="保存临时调整" Padding="16,10" IsDefault="True" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

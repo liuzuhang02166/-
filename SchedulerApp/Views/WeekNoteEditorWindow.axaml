@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        x:Class="SchedulerApp.Views.WeekNoteEditorWindow"
+        x:DataType="vm:WeekNoteEditorDialogViewModel"
+        Width="860"
+        Height="560"
+        WindowStartupLocation="CenterOwner"
+        Title="通知 / 本周备注">
+  <Border Classes="card" Margin="18">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <Border Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="2">
+            <TextBlock Text="通知 / 本周备注" FontSize="14" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding WeekRangeText}" FontSize="12" Foreground="#6B7280" />
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text="{Binding Error}" Foreground="#FFB4B4" FontSize="12" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+
+      <Grid Grid.Row="1" Margin="14" RowDefinitions="Auto,*" RowSpacing="10">
+        <TextBlock Text="用于导出给家长/老师的通知内容（可选），也可作为内部备注。" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+        <TextBox Grid.Row="1"
+                 Classes="field"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 MinHeight="320"
+                 Text="{Binding Notes, Mode=TwoWay}" />
+      </Grid>
+
+      <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+          <TextBlock Text="保存后导出可选择是否包含本周备注" Foreground="#6B7280" VerticalAlignment="Center" FontSize="12" />
+          <Button Name="CancelButton" Grid.Column="1" Classes="secondary" Content="取消" Padding="16,10" />
+          <Button Name="OkButton" Grid.Column="2" Classes="primary" Content="保存" Padding="16,10" IsDefault="True" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

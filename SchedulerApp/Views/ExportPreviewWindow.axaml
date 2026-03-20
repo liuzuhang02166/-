@@ -1,0 +1,92 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SchedulerApp.ViewModels"
+        xmlns:m="using:SchedulerApp.Models"
+        xmlns:conv="using:SchedulerApp.Converters"
+        x:Class="SchedulerApp.Views.ExportPreviewWindow"
+        x:DataType="vm:ExportPreviewDialogViewModel"
+        Width="640"
+        Height="620"
+        WindowStartupLocation="CenterOwner"
+        Title="导出 PDF">
+  <Window.Resources>
+    <conv:EnumEqualsConverter x:Key="EnumEq" />
+  </Window.Resources>
+  <Border Classes="card" Margin="18">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <Border Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="2">
+            <TextBlock Text="导出设置" FontSize="14" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding DateRangeText}" FontSize="12" Foreground="#6B7280" />
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text="{Binding Error}" Foreground="#FFB4B4" FontSize="12" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Row="1"
+                    Margin="14"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="16" Padding="12" ClipToBounds="True">
+          <StackPanel Spacing="12">
+            <TextBlock Text="导出时间" FontSize="13" FontWeight="SemiBold" />
+
+            <Border CornerRadius="14" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="12">
+              <StackPanel Spacing="10">
+                <RadioButton Name="ThisWeekRadio" Content="本周课表" GroupName="date" />
+                <RadioButton Name="NextWeekRadio" Content="下周课表" GroupName="date" />
+                <RadioButton Name="CustomRangeRadio" Content="自定义日期范围" GroupName="date" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10"
+                      IsVisible="{Binding DateMode, Converter={StaticResource EnumEq}, ConverterParameter=Custom}">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="开始日期" FontSize="12" Foreground="#6B7280" />
+                    <DatePicker Classes="field" Height="32" SelectedDate="{Binding CustomStartDate, Mode=TwoWay}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock Text="结束日期" FontSize="12" Foreground="#6B7280" />
+                    <DatePicker Classes="field" Height="32" SelectedDate="{Binding CustomEndDate, Mode=TwoWay}" />
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <TextBlock Text="导出范围" FontSize="13" FontWeight="SemiBold" />
+
+            <Border CornerRadius="14" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="12">
+              <StackPanel Spacing="10">
+                <RadioButton Name="AllTeachersRadio" Content="全部老师" GroupName="scope" IsChecked="{Binding ExportAllTeachers, Mode=TwoWay}" />
+                <RadioButton Name="SingleTeacherRadio" Content="仅导出选中老师" GroupName="scope" />
+                <ComboBox Classes="field" Height="32" ItemsSource="{Binding Teachers}" SelectedItem="{Binding SelectedTeacher, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="m:Teacher">
+                      <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </StackPanel>
+            </Border>
+
+            <TextBlock Text="导出选项" FontSize="13" FontWeight="SemiBold" />
+            <Border CornerRadius="14" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" Padding="12">
+              <StackPanel Spacing="10">
+                <CheckBox Content="包含本周备注"
+                          IsEnabled="{Binding IncludeWeekNotesEnabled}"
+                          IsChecked="{Binding IncludeWeekNotes, Mode=TwoWay}" />
+                <TextBlock Text="默认总是包含“变动通知”第一页（本周临时调整）。" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+      </ScrollViewer>
+
+      <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="14,12">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+          <TextBlock Text="生成 PDF 可能需要几秒钟" Foreground="#6B7280" VerticalAlignment="Center" FontSize="12" />
+          <Button Name="CancelButton" Grid.Column="1" Classes="secondary" Content="关闭" Padding="16,10" />
+          <Button Name="ExportButton" Grid.Column="2" Classes="primary" Content="开始导出" Padding="16,10" IsDefault="True" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SchedulerApp 原型 - 删除确认</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "Helvetica", "Arial"] },
+            boxShadow: {
+              win: "0 12px 40px rgba(0,0,0,.35)",
+              soft: "0 10px 30px rgba(0,0,0,.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../shared/ui.css" />
+  </head>
+  <body class="min-h-[560px] bg-zinc-950 text-zinc-100">
+    <div class="fixed inset-0 -z-10">
+      <img
+        class="h-full w-full object-cover opacity-65"
+        alt="Background"
+        src="https://images.unsplash.com/photo-1529400971008-f566de0e6dfc?auto=format&fit=crop&w=2200&q=70"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-zinc-950/60 via-zinc-950/65 to-zinc-950/90"></div>
+    </div>
+
+    <div class="mx-auto flex min-h-[560px] max-w-[760px] items-center justify-center p-6">
+      <div class="w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10 shadow-win backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/20 text-rose-200 ring-1 ring-white/15">
+              <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold leading-4">删除确认</div>
+              <div class="mt-0.5 text-xs text-zinc-300 leading-4">防误删：二次确认 + 关联检查</div>
+            </div>
+          </div>
+          <button id="closeBtn" class="h-9 w-10 rounded-xl bg-white/10 ring-1 ring-white/15 hover:bg-white/15" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 p-4">
+          <section class="col-span-7 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-sm font-semibold">选择删除对象</div>
+            <div class="mt-3 grid gap-3">
+              <div class="grid grid-cols-2 gap-3">
+                <label class="field">
+                  <span class="field-label">类型</span>
+                  <select id="kind" class="field-input">
+                    <option value="teacher">老师</option>
+                    <option value="student">学员</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">对象</span>
+                  <select id="target" class="field-input">
+                    <option value="lin">林老师</option>
+                    <option value="zhou">周老师</option>
+                    <option value="wang">王老师</option>
+                    <option value="chen">陈老师</option>
+                  </select>
+                </label>
+              </div>
+
+              <div id="warning" class="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3">
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-triangle-exclamation mt-0.5 text-rose-200"></i>
+                  <div>
+                    <div class="text-sm font-semibold text-rose-100">该老师名下仍有学员</div>
+                    <div class="mt-1 text-xs text-rose-100/90 leading-6">
+                      删除老师将导致其排课与资料失去关联。建议先转移学员或批量导出备份。
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div class="text-sm font-semibold">安全确认</div>
+                <div class="mt-2 text-xs text-zinc-300 leading-6">
+                  输入 <span class="rounded-md bg-white/10 px-2 py-0.5 font-semibold text-zinc-100 ring-1 ring-white/10">删除</span> 以启用删除按钮：
+                </div>
+                <div class="mt-2">
+                  <input
+                    id="confirmText"
+                    class="field-input"
+                    placeholder="请输入：删除"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+                <label class="mt-3 flex items-center gap-2 text-xs text-zinc-300">
+                  <input id="confirmCheck" type="checkbox" class="h-4 w-4 accent-rose-500" />
+                  <span>我已确认将永久删除，并理解不可恢复</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="col-span-5 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-sm font-semibold">关联概览</div>
+            <div class="mt-2 space-y-2 text-xs text-zinc-300 leading-6">
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-users mt-1 text-sky-300"></i>
+                <span>林老师：12 名学员（包含持续排课与临时覆盖）</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-calendar-check mt-1 text-emerald-300"></i>
+                <span>本周 3 条基础排课将受影响</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles mt-1 text-violet-300"></i>
+                <span>本周 1 条临时覆盖将失去“原ID”映射</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fa-solid fa-file-pdf mt-1 text-amber-300"></i>
+                <span>建议先导出该老师 PDF 作为备份</span>
+              </div>
+            </div>
+
+            <div class="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+              <div class="border-b border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-zinc-200">建议操作</div>
+              <div class="grid gap-2 p-3">
+                <button class="suggest">
+                  <i class="fa-solid fa-right-left"></i>
+                  <span>先转移学员到其他老师</span>
+                </button>
+                <button class="suggest">
+                  <i class="fa-solid fa-file-export"></i>
+                  <span>先导出 PDF 备份</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/10 bg-white/5 px-4 py-3">
+          <button id="cancelBtn" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+            取消
+          </button>
+          <button
+            id="deleteBtn"
+            class="rounded-xl bg-rose-500/40 px-4 py-2 text-sm font-semibold text-white ring-1 ring-rose-500/25"
+            disabled
+          >
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared/ui.global.js"></script>
+    <script>
+      const { postToParent, qs } = window.ProtoUI;
+
+      const kind = qs("#kind");
+      const target = qs("#target");
+      const warning = qs("#warning");
+      const confirmText = qs("#confirmText");
+      const confirmCheck = qs("#confirmCheck");
+      const deleteBtn = qs("#deleteBtn");
+
+      function closeSelf() {
+        postToParent("closeOverlay");
+        if (window.parent === window) window.close();
+      }
+
+      function syncUI() {
+        const isTeacher = kind.value === "teacher";
+        warning.classList.toggle("hidden", !isTeacher);
+        const ok = confirmText.value.trim() === "删除" && confirmCheck.checked;
+        deleteBtn.disabled = !ok;
+        deleteBtn.className =
+          "rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-soft " +
+          (ok ? "bg-rose-500 hover:bg-rose-400" : "bg-rose-500/40 ring-1 ring-rose-500/25");
+      }
+
+      function syncTargetOptions() {
+        if (kind.value === "teacher") {
+          target.innerHTML = `
+            <option value="lin">林老师</option>
+            <option value="zhou">周老师</option>
+            <option value="wang">王老师</option>
+            <option value="chen">陈老师</option>
+          `;
+        } else {
+          target.innerHTML = `
+            <option value="xm">小明</option>
+            <option value="qq">琪琪</option>
+            <option value="yy">圆圆</option>
+            <option value="leo">Leo</option>
+          `;
+        }
+      }
+
+      function applyParams() {
+        const usp = new URLSearchParams(location.search);
+        const k = usp.get("kind");
+        const t = usp.get("target");
+        if (k === "teacher" || k === "student") kind.value = k;
+        syncTargetOptions();
+        if (t) {
+          const opts = Array.from(target.options);
+          const hit = opts.find((o) => (o.textContent || "") === t);
+          if (hit) target.value = hit.value;
+        }
+      }
+
+      kind.addEventListener("change", () => {
+        syncTargetOptions();
+        syncUI();
+      });
+      [target, confirmText, confirmCheck].forEach((el) => el.addEventListener("input", syncUI));
+      confirmCheck.addEventListener("change", syncUI);
+
+      qs("#closeBtn").addEventListener("click", closeSelf);
+      qs("#cancelBtn").addEventListener("click", closeSelf);
+      deleteBtn.addEventListener("click", () => closeSelf());
+
+      applyParams();
+      syncUI();
+    </script>
+
+    <style>
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.72);
+        font-weight: 600;
+      }
+      .field-input {
+        width: 100%;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+        outline: none;
+      }
+      .field-input:focus {
+        border-color: rgba(244, 63, 94, 0.55);
+        box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.12);
+      }
+      .suggest {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 16px;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .suggest:hover {
+        background: rgba(255, 255, 255, 0.10);
+      }
+    </style>
+  </body>
+</html>
